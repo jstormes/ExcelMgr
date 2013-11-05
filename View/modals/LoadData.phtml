@@ -1,0 +1,46 @@
+
+<style>
+#testmod .modal-dialog {
+	width: 95%; /* your width */
+}
+
+@media ( max-width : 991px) {
+	#testmod .modal-dialog {
+		width: 99%; /* your width */
+	}
+}
+</style>
+
+<!-- Modal Column Matching -->
+<div class='modal' id='testmod' tabindex='-1' role='dialog'
+	aria-labelledby='myModalLabel' aria-hidden='true'>
+	<div class='modal-dialog'>
+		<div class='modal-content'>
+			<form method='post' enctype='multipart/form-data'>
+
+				<div class='modal-header'>
+					<button type='button' class='close' data-dismiss='modal'
+						aria-hidden='true'>&times;</button>
+					<h4 class='modal-title'>Data Load Log</h4>
+				</div>
+
+				<div class='modal-body'>
+				
+				<pre>
+				<?php echo $this->log; ?>
+				</pre>
+				
+				</div>
+
+				<div class='modal-footer'>
+					<button type='submit' class='btn btn-default' data-dismiss='modal'>Done</button>
+<!-- 					<button type='submit' class='btn btn-primary'>Ignore Errors and Force Load</button> -->
+				</div>
+
+			</form>
+		</div>
+		<!-- /.modal-content -->
+	</div>
+	<!-- /.modal-dialog -->
+</div>
+<!-- /.modal -->

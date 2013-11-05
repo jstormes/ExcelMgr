@@ -1,0 +1,153 @@
+
+<style>
+#testmod .modal-dialog {
+	width: 95%; /* your width */
+}
+
+@media ( max-width : 991px) {
+	#testmod .modal-dialog {
+		width: 99%; /* your width */
+	}
+}
+</style>
+
+<!-- Modal Column Matching -->
+<div class='modal' id='testmod' tabindex='-1' role='dialog'
+	aria-labelledby='myModalLabel' aria-hidden='true'>
+	<div class='modal-dialog'>
+		<div class='modal-content'>
+			<form method='post' name="testmod" enctype='multipart/form-data'
+			onsubmit='return testmod_on_submit()'>
+
+				<div class='modal-header'>
+					<button type='button' class='close' data-dismiss='modal'
+						aria-hidden='true'>&times;</button>
+					<h4 class='modal-title'>Data Load</h4>
+				</div>
+
+				<div class='modal-body'>
+
+
+					<div class="container">
+
+
+						<div class="row">
+							<div class="col-sm-4">
+								<label class="control-label" for="tabname">Tab to load from.</label>
+								<div class="controls">
+									<input type='hidden' name='<?php echo $this->name; ?>-step1'
+										value='true' />
+				<?php echo $this->file_meta; ?>
+				<?php echo $this->formSelect("source_table_idx",$this->source_table_idx,array("class"=>"form-control",'onchange' => 'this.form.submit();'),$this->source_tables); ?>
+				<p class="help-block">The Excel tab to load the data from.</p>
+								</div>
+							</div>
+						</div>
+
+						<div class="form-group col-sm-12">
+							<div class="row">
+								<div class="controls">
+									<label for="rename"> 
+									<?php echo $this->formCheckbox("firstRowNames",null,array('checked' => $this->firstRowNames,'onchange' => 'this.form.submit();')); ?>
+									
+										First row contains column names.
+									</label>
+								</div>
+							</div>
+
+						</div>
+
+
+						<div class="row">
+							<div class="col-sm-3">
+								<h4>Source Column</h4>
+							</div>
+							<div class="col-sm-1"></div>
+							<div class="col-sm-2">
+								<h4>Destination Column</h4>
+							</div>
+							<div class="col-sm-4">
+								<h4>Status</h4>
+							</div>
+						</div>
+
+						<div id='results'>
+		
+							<?php foreach($this->source_tableInfo as $column_name=>$info) { ?>
+							<div class="row">
+								<div class="col-sm-3">
+									<button type="button" class="btn btn-default"><?php echo $column_name; ?> (<?php echo $info['DATA_TYPE']." ".$info['LENGTH']?> )</button>
+								</div>
+								<div class="col-sm-1">
+									<h4>---&gt;</h4>
+								</div>
+								<div class="col-sm-2">
+								
+									<?php echo $this->formSelect(
+											"mapping[$column_name]",
+											$this->mapping[$column_name],
+											array('class'=>'form-control','onclick'=>"updateStatus('$column_name',this.value)"),
+											$this->dest_options);?>
+
+								</div>
+								<div id="<?php echo $column_name ?>" class="col-sm-4"></div>
+							</div>
+							<?php } ?>	
+							
+						</div>
+
+					</div>
+
+				</div>
+
+				<div class='modal-footer'>
+					<button type='button' class='btn btn-default' data-dismiss='modal'>Cancel</button>
+					<button type='submit' class='btn btn-primary' name="Load">Load</button>
+				</div>
+
+			</form>
+		</div>
+		<!-- /.modal-content -->
+	</div>
+	<!-- /.modal-dialog -->
+</div>
+<!-- /.modal -->
+<div class="modal" id="pleaseWaitDialog" role='dialog' aria-labelledby='myModalLabel2' aria-hidden='true'>
+	<div class='modal-dialog'>
+		<div class='modal-content'>
+			<div class="modal-header">
+				<h1>Processing...</h1>
+			</div>
+			<div class="modal-body">Depending on the size of the data this may take some time. <br /><br />Please Wait.</div>
+		</div>
+	</div>
+</div>
+
+<script>
+
+var SourceSchema = <?php echo $this->SourceSchema; ?>;
+var DestSchema = <?php echo $this->DestSchema; ?>;
+
+function updateStatus(source_column,dest_column) {
+	var msg = '';
+
+	if (dest_column!='ignore') {
+		if (DestSchema[dest_column].DATA_TYPE!='text')
+			if (DestSchema[dest_column].LENGTH<SourceSchema[source_column].LENGTH)
+				msg += "Destination column is too short.  Column data will be truncated.";
+	
+		if (DestSchema[dest_column].DATA_TYPE!=SourceSchema[source_column].DATA_TYPE)
+			msg += " Column types don't match.";
+	}
+	document.getElementById(source_column).innerHTML=msg;
+}
+
+
+function testmod_on_submit() {
+    
+    $('#testmod').modal('hide');
+    $('#pleaseWaitDialog').modal();
+	  return true;
+	}
+</script>
+<!-- End Modal Upload -->
