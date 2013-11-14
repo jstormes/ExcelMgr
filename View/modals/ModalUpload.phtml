@@ -5,8 +5,8 @@
 		<div class='modal-content'>
 			<script>
 	        function <?php echo $this->name; ?>_on_submit() {
-		      if (typeof document.getElementById('upload').files[0] != 'undefined') {
-	            if (typeof document.getElementById('upload').files != 'undefined') {
+		      if (typeof document.getElementById('upload').files != 'undefined') {
+	            if (typeof document.getElementById('upload').files[0] != 'undefined') {
 			      if (document.getElementById('upload').files[0].size > <?php echo $this->MAX_FILE_SIZE; ?>) {
 			        alert('File size is too large.');
 			        return false;

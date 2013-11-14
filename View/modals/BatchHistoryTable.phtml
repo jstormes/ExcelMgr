@@ -1,5 +1,6 @@
 				<?php if (count($this->batch_history)>0) { ?>
 				<input type='hidden' id='batch_id' name='batch_id' />
+				<input type='hidden' id='delete_id' name='delete_id' />
 					<div class="row">&nbsp;</div>
 					<div class="row">
 						<p class='control-label'><h4>Table Load History: </h4></p>
@@ -8,7 +9,7 @@
 						<div class="col-md-12">
 							<table class="table">
 		  						<tr>
-		  							<th>Date/Time</th><th>File</th><th>Status</th>
+		  							<th>Date/Time</th><th>File</th><th>Status</th><th>Options</th>
 		  						</tr>
 		  						<?php 
 		  						$i=0;
@@ -27,6 +28,13 @@
 	  										</a>
 		  								<?php } else { ?>
 		  									<?php echo $record['status']?>
+		  								<?php }?>
+		  							</td>
+		  							<td>
+		  								<?php if ($i==1) {?>
+		  								<a href="#"
+		  									onclick="$('#delete_id').val('<?php echo $record['excel_mgr_batch_id']; ?>');$(this).closest('form').submit();">
+		  								Delete</a>
 		  								<?php }?>
 		  							</td>
 		  						</tr>
