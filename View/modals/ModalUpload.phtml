@@ -5,12 +5,14 @@
 		<div class='modal-content'>
 			<script>
 	        function <?php echo $this->name; ?>_on_submit() {
-	          if (typeof document.getElementById('upload').files != 'undefined') {
-			    if (document.getElementById('upload').files[0].size > <?php echo $this->MAX_FILE_SIZE; ?>) {
-			      alert('File size is too large.');
-			      return false;
+		      if (typeof document.getElementById('upload').files[0] != 'undefined') {
+	            if (typeof document.getElementById('upload').files != 'undefined') {
+			      if (document.getElementById('upload').files[0].size > <?php echo $this->MAX_FILE_SIZE; ?>) {
+			        alert('File size is too large.');
+			        return false;
+			      }
 			    }
-			  }
+		      }
 	          $('#<?php echo $this->name; ?>').modal('hide');
 	          $('#pleaseWaitDialog').modal();
 			  return true;
@@ -24,14 +26,27 @@
 					<h4 class='modal-title'><?php echo $this->Title; ?></h4>
 				</div>
 				<div class='modal-body'>
-					<!-- Name of input element determines name in the array -->
-					<input id='upload' class='btn btn-default' type='file'
-						name='<?php echo $this->name; ?>'>
-					<p class='help-block'><?php echo $this->Help; ?></p>
+					<div class="row">
+						<label class="control-label" for="upload"><h4><?php echo $this->Help; ?></h4></label>
+					</div>
+					<div class="row">
+						<div class="col-md-6">
+							<!-- Name of input element determines name in the array -->
+							
+							<input id='upload' class='btn btn-default' type='file' name='<?php echo $this->name; ?>'>
+						</div>
+						<div class="col-md-6">	
+							<button type='submit' class='btn btn-primary  pull-right'>Upload File</button>
+						</div>
+					</div>
+					<!--  Begin history table -->
+					<div id="BatchHistoryTable">
+					
+					</div>
 				</div>
 				<div class='modal-footer'>
 					<button type='button' class='btn btn-default' data-dismiss='modal'>Close</button>
-					<button type='submit' class='btn btn-primary'>Upload File</button>
+					
 				</div>
 			</form>
 		</div>
@@ -51,3 +66,27 @@
 		</div>
 	</div>
 </div>
+
+<script>
+
+var timer;
+
+function doPoll(){
+    $.post('ajax/test.html', function(data) {
+    	$( "#BatchHistoryTable" ).load( window.location.pathname + "?batchtablehistory=true" );
+    	timer = setTimeout(doPoll,5000);
+    });
+}
+
+// start polling the batch history when the modal is shown
+$('#<?php echo $this->name; ?>').on('show.bs.modal', function () {
+	doPoll();
+})
+	
+// stop polling the batch history when the modal is hidden
+$('#<?php echo $this->name; ?>').on('hidden.bs.modal', function () {
+	clearTimeout(timer);
+    return false;
+})
+
+</script>

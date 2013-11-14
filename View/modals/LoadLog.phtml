@@ -27,7 +27,11 @@
 				<div class='modal-body'>
 				
 				<pre>
-				<?php echo $this->log; ?>
+				<?php 
+					if (file_exists($this->record->log_file))
+						echo file_get_contents($this->record->log_file);
+				
+				?>
 				</pre>
 				
 				</div>
