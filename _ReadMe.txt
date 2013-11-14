@@ -64,6 +64,41 @@ On an un-successful load all the records from that batch will be truly deleted f
 the table.
 
 
+Tables:
+
+DROP TABLE IF EXISTS `excel_mgr_batch`;
+CREATE TABLE IF NOT EXISTS `excel_mgr_batch` (
+  `excel_mgr_batch_id` bigint(20) NOT NULL AUTO_INCREMENT,
+  `project_id` bigint(20) NOT NULL,
+  `file_name` varchar(255) COLLATE utf8_unicode_ci NOT NULL,
+  `tmp_name` varchar(1024) COLLATE utf8_unicode_ci NOT NULL,
+  `tab` varchar(255) COLLATE utf8_unicode_ci NOT NULL,
+  `first_row_names` tinyint(1) NOT NULL,
+  `table_name` varchar(255) COLLATE utf8_unicode_ci NOT NULL,
+  `map` varchar(1024) COLLATE utf8_unicode_ci NOT NULL,
+  `pid` bigint(20) DEFAULT NULL,
+  `status` varchar(50) COLLATE utf8_unicode_ci NOT NULL,
+  `log_file` varchar(255) COLLATE utf8_unicode_ci NOT NULL,
+  `uptd_usr_id` int(11) NOT NULL,
+  `updt_dtm` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `deleted` tinyint(1) NOT NULL,
+  PRIMARY KEY (`excel_mgr_batch_id`)
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci AUTO_INCREMENT=7 ;
+
+
+DROP TABLE IF EXISTS `excel_mgr_log`;
+CREATE TABLE IF NOT EXISTS `excel_mgr_log` (
+  `excel_mgr_log_id` bigint(20) NOT NULL AUTO_INCREMENT,
+  `excel_mgr_batch_id` bigint(20) NOT NULL,
+  `row` bigint(20) NOT NULL,
+  `msg` text COLLATE utf8_unicode_ci NOT NULL,
+  `row_json` text COLLATE utf8_unicode_ci NOT NULL,
+  PRIMARY KEY (`excel_mgr_log_id`),
+  KEY `excel_mgr_batch_id` (`excel_mgr_batch_id`),
+  KEY `excel_mgr_batch_id_2` (`excel_mgr_batch_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci AUTO_INCREMENT=1 ;
+
+
 
 
 
