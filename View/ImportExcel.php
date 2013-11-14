@@ -36,6 +36,7 @@ class ExcelMgr_View_ImportExcel
 		$this->table_name 	= $this->destTable->info('name');
 		
 		$this->dest_meta=$destination->info('metadata');
+		$this->log->debug($this->dest_meta);
 		
 		/* The layout is not part of the current view
 		 * you have to grab a copy of the layout to
@@ -397,7 +398,7 @@ class ExcelMgr_View_ImportExcel
 		
 		$Batch_id=$Batch_Row->save();
 		
-		$this->run("../library/ExcelMgr/Scripts/ExcelToTable.php ".$Batch_id,$Batch_Row->log_file);
+		$this->run( dirname(__file__) . "/../Scripts/ExcelToTable.php ".$Batch_id,$Batch_Row->log_file);
 		
 		for($i=0;$i<5;$i++) {
 			sleep(1);

@@ -46,6 +46,8 @@ class ExcelMgr_ExcelToTable
 		
 		$this->destTable = new Zend_Db_Table($this->table_name);
 		
+		$metadata = $this->destTable->info('metadata');
+		
 		$this->log->debug($this->tmp_name);
 		
 		//  $inputFileType = 'Excel5';
@@ -108,10 +110,17 @@ class ExcelMgr_ExcelToTable
 			foreach($sheetData as $Row=>$Columns){
 				print_r($map,true);
 				$NewRow=$this->destTable->fetchNew();
+				
 				foreach($Columns as $SourceColumnName=>$Value) {
 					if ($map[$SourceColumnName]!='ignore') {
 						//$this->log->info("Copying Column: ".$map[$SourceColumnName]);
-						$NewRow->$map[$SourceColumnName]=$dbAdapter->quote($Value);
+						$Column = $NewRow->$map[$SourceColumnName];
+						if ($metadata[$map[$SourceColumnName]]['DATA_TYPE']=='date') {
+							$NewRow->$map[$SourceColumnName] = date('c',($Value - 25569) * 86400);
+						}
+						else {
+							$NewRow->$map[$SourceColumnName]=$dbAdapter->quote($Value);
+						}
 				
 					}
 				}
@@ -144,85 +153,85 @@ class ExcelMgr_ExcelToTable
 	}
 	
 	
-	function load2() {
-		$this->log->info("Starting Load Batch ".$this->batch_id.".");
+// 	function load2() {
+// 		$this->log->info("Starting Load Batch ".$this->batch_id.".");
 		
-		$LogTable = new ExcelMgr_Models_ExcelMgrLog();
+// 		$LogTable = new ExcelMgr_Models_ExcelMgrLog();
 		
-		// Begin Transaction
-		//$this->destTable->getAdapter()->beginTransaction();
-		$dbAdapter = Zend_Db_Table::getDefaultAdapter();
+// 		// Begin Transaction
+// 		//$this->destTable->getAdapter()->beginTransaction();
+// 		$dbAdapter = Zend_Db_Table::getDefaultAdapter();
 		
-		$this->destTable = new Zend_Db_Table($this->table_name);
+// 		$this->destTable = new Zend_Db_Table($this->table_name);
 		
-		$this->log->debug($this->tmp_name);
+// 		$this->log->debug($this->tmp_name);
 		
-		// Loop over source records
-		/* Database adaptor like Excel file */
-		$Excel = new PHPSlickGrid_Excel($this->tmp_name);
+// 		// Loop over source records
+// 		/* Database adaptor like Excel file */
+// 		$Excel = new PHPSlickGrid_Excel($this->tmp_name);
 		
 		
 		
-		if (isset($_POST['firstRowNames'])) {
-			if ($_POST['firstRowNames']==0)
-				$Excel->firstRowNames=0;
-			else
-				$Excel->firstRowNames=1;
-		}
-		$source_tables=$Excel->listTables();
-		$SourceSchema=$Excel->describeTable($source_tables[$this->tab]);
-		$SourceData=$Excel->ExcelFetchAllArray($source_tables[$this->tab]);
+// 		if (isset($_POST['firstRowNames'])) {
+// 			if ($_POST['firstRowNames']==0)
+// 				$Excel->firstRowNames=0;
+// 			else
+// 				$Excel->firstRowNames=1;
+// 		}
+// 		$source_tables=$Excel->listTables();
+// 		$SourceSchema=$Excel->describeTable($source_tables[$this->tab]);
+// 		$SourceData=$Excel->ExcelFetchAllArray($source_tables[$this->tab]);
 		
-		$map=$this->map;
+// 		$map=$this->map;
 		
-		$this->log->info(print_r($map,true));
+// 		$this->log->info(print_r($map,true));
 		
-		$error_cnt = 0;
+// 		$error_cnt = 0;
 		
-		//for ($startRow = 2; $startRow <= 240; $startRow += $chunkSize) {
-			foreach($SourceData as $Row=>$Columns){
-				$NewRow=$this->destTable->fetchNew();
-				foreach($Columns as $SourceColumnName=>$Value) {
-					if ($map[$SourceColumnName]!='ignore') {
-						//$this->log->info("Copying Column: ".$map[$SourceColumnName]);
-						$NewRow->$map[$SourceColumnName]=$dbAdapter->quote($Value);
+// 		//for ($startRow = 2; $startRow <= 240; $startRow += $chunkSize) {
+// 			foreach($SourceData as $Row=>$Columns){
+// 				$NewRow=$this->destTable->fetchNew();
+// 				foreach($Columns as $SourceColumnName=>$Value) {
+// 					if ($map[$SourceColumnName]!='ignore') {
+// 						//$this->log->info("Copying Column: ".$map[$SourceColumnName]);
+// 						$NewRow->$map[$SourceColumnName]=$dbAdapter->quote($Value);
 						
-					}
-				}
-				try {
-					// Attempt insert
-					$this->log->info("Writing Row");
-					$NewRow->project_id=$this->project_id;
-					$NewRow->excel_mgr_batch_id=$this->batch_id;
-					$NewRow->deleted=1;
-					$id=$NewRow->save();
-					//$this->log->info("Row $id written.");
-				}
-				catch (Exception $Ex) {
-					// Catch errors
-					$error_cnt++;
+// 					}
+// 				}
+// 				try {
+// 					// Attempt insert
+// 					$this->log->info("Writing Row");
+// 					$NewRow->project_id=$this->project_id;
+// 					$NewRow->excel_mgr_batch_id=$this->batch_id;
+// 					$NewRow->deleted=1;
+// 					$id=$NewRow->save();
+// 					//$this->log->info("Row $id written.");
+// 				}
+// 				catch (Exception $Ex) {
+// 					// Catch errors
+// 					$error_cnt++;
 					
-					$log_row = $LogTable->createRow();
-					$log_row->excel_mgr_batch_id = $this->batch_id;
-					$log_row->row = json_encode($Columns);
-					$log_row->msg = $Ex->getMessage();
-				}
-			}
-		//}
+// 					$log_row = $LogTable->createRow();
+// 					$log_row->excel_mgr_batch_id = $this->batch_id;
+// 					$log_row->row = json_encode($Columns);
+// 					$log_row->msg = $Ex->getMessage();
+// 				}
+// 			}
+// 		//}
 		
-		if ($error_cnt==0) {
-			$data = array('deleted' => 0);
-			$where = $this->destTable->getAdapter()->quoteInto('excel_mgr_batch_id = ?', $this->batch_id);
-			$this->destTable->update($data, $where);
-		}
-		else {
-			$where = $this->destTable->getAdapter()->quoteInto('excel_mgr_batch_id = ?', $this->batch_id);
-			$this->destTable->delete($where);
-		}
+// 		if ($error_cnt==0) {
+// 			$data = array('deleted' => 0);
+// 			$where = $this->destTable->getAdapter()->quoteInto('excel_mgr_batch_id = ?', $this->batch_id);
+// 			$this->destTable->update($data, $where);
+// 		}
+// 		else {
+// 			$where = $this->destTable->getAdapter()->quoteInto('excel_mgr_batch_id = ?', $this->batch_id);
+// 			$this->destTable->delete($where);
+// 		}
 			
 		
 		
-	}
+// 	}
 	
 	public function log() {
 		

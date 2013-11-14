@@ -63,6 +63,12 @@ set to 0 (false).
 On an un-successful load all the records from that batch will be truly deleted from 
 the table.
 
+JavaScript:
+===========
+http://stephen.rees-carter.net/2012/03/automatic-javascript-minification-in-zend-framework/
+
+
+
 
 Tables:
 
