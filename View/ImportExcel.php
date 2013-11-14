@@ -15,6 +15,7 @@ class ExcelMgr_View_ImportExcel
 	public function __construct($name, $destination, $project_id, $options){
 		
 		$this->log = Zend_Registry::get('log');
+		$this->config = Zend_Registry::get('config');
 		
 		$this->name = $name;
 		
