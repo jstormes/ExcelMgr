@@ -50,4 +50,9 @@
 <!-- /.modal -->
 <script>
 $( document ).ready(function() {$('#testmod').modal();});
+$('#testmod').on('hidden.bs.modal', function () {
+	window.location = document.URL;
+	});
+
+
 </script>
