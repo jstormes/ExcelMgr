@@ -172,7 +172,7 @@ class ExcelMgr_View_ImportExcel
 		$this->layout->disableLayout();
 		
 		$modalView = new Zend_View();
-		$modalView->setScriptPath( APPLICATION_PATH . '/../library/ExcelMgr/View/modals/' );
+		$modalView->setScriptPath( dirname(__file__) . '/modals/' );
 		
 		/**  Show history for this table's loads  **/
 		$Batch = new ExcelMgr_Models_ExcelMgrBatch();
@@ -208,7 +208,7 @@ class ExcelMgr_View_ImportExcel
 		 * view from the controller.
 		*/
 		$modalView = new Zend_View();
-		$modalView->setScriptPath( APPLICATION_PATH . '/../library/ExcelMgr/View/modals/' );
+		$modalView->setScriptPath( dirname(__file__) . '/modals/' );
 		
 		$batch_id = $_POST['batch_id'];
 		
@@ -233,7 +233,7 @@ class ExcelMgr_View_ImportExcel
 		 * view from the controller.
 		*/
 		$modalView = new Zend_View();
-		$modalView->setScriptPath( APPLICATION_PATH . '/../library/ExcelMgr/View/modals/' );
+		$modalView->setScriptPath( dirname(__file__) . '/modals/' );
 	
 		/* Calculate the maximum possible upload size from the *.ini setting */
 		$upload_max_filesize 			= $this->return_bytes(ini_get('upload_max_filesize'));
@@ -313,7 +313,7 @@ class ExcelMgr_View_ImportExcel
 		/* Create modal by using the Zend_View similar to using the
 		 * view from the controller.  */
 		$modalView = new Zend_View();
-		$modalView->setScriptPath( APPLICATION_PATH . '/../library/ExcelMgr/View/modals/' );
+		$modalView->setScriptPath( dirname(__file__) . '/modals/' );
 		
 		//  $inputFileType = 'Excel5';
 		$inputFileType = 'Excel2007';
@@ -379,7 +379,7 @@ class ExcelMgr_View_ImportExcel
 		/* Create modal by using the Zend_View similar to using the
 		 * view from the controller. */
 		$modalView = new Zend_View();
-		$modalView->setScriptPath( APPLICATION_PATH . '/../library/ExcelMgr/View/modals/' );
+		$modalView->setScriptPath( dirname(__file__) . '/modals/' );
 		
 		$Batch = new ExcelMgr_Models_ExcelMgrBatch();
 		
