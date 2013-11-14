@@ -413,11 +413,14 @@ class ExcelMgr_View_ImportExcel
 	
 	public function run($scrip,$outputFile = '/dev/null')
 	{
+		$interpreter = $this->config->php_interpreter;
+		
 		putenv("APPLICATION_ENV=".APPLICATION_ENV); 		// APPLICATION_ENV
 		putenv("PHP_INCLUDE_PATH=". get_include_path()); 	// PHP_INCLUDE_PATH
 		putenv("APPLICATION_PATH=". APPLICATION_PATH);		// APPLICATION_PATH
 		$this->pid = shell_exec(sprintf(
-				'php %s > %s 2>&1 & echo $!',
+				'%s %s > %s 2>&1 & echo $!',
+				$interpreter,
 				$scrip,
 				$outputFile
 		));
