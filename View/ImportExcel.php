@@ -310,6 +310,44 @@ class ExcelMgr_View_ImportExcel
 		}
 	}
 	
+	// define the mapping function
+	function findClosestMatchingString($s, $arr2) {
+		$stringEditDistanceThreshold = 4;
+		$closestDistanceThusFar = $stringEditDistanceThreshold + 1;
+		$closestMatchValue      = null;
+	
+		foreach ($arr2 as $key => $value) {
+			$editDistance = levenshtein(strtolower($key),  strtolower($s));
+			$this->log->debug($key." ".$s." ".$editDistance);
+	
+			// exact match
+			if ($editDistance == 0) {
+				return $key;
+	
+				// best match thus far, update values to compare against/return
+			} elseif ($editDistance < $closestDistanceThusFar) {
+				$closestDistanceThusFar = $editDistance;
+				$closestMatchValue      = $key;
+			}
+		}
+	
+		$this->log->debug($s." ".$closestMatchValue." ");
+		return $closestMatchValue; // possible to return null if threshold hasn't been met
+	}
+	
+	function removeHidden($ary,$hidden) {
+		
+		foreach($ary as $key=>$value) {
+			if (in_array($key,$hidden))
+				unset($ary[$key]);
+			else
+				if (in_array($value,$hidden))
+					unset($ary[$key]);
+		}
+		
+		return $ary;
+	}
+	
 	public function MapData() {
 		
 		/* Create modal by using the Zend_View similar to using the
@@ -327,6 +365,19 @@ class ExcelMgr_View_ImportExcel
 		$objReader = PHPExcel_IOFactory::createReader($inputFileType);
 		$worksheetNames = $objReader->listWorksheetNames($this->file_meta['tmp_name']);
 		
+		$hidden=array();
+		$hidden[] = "project_id";
+		$hidden[] = "coding_id";
+		$hidden[] = "deleted";
+		$hidden[] = "crea_dtm";
+		$hidden[] = "crea_usr_id";
+		$hidden[] = "updt_dtm";
+		$hidden[] = "updt_usr_id";
+		$hidden[] = "excel_mgr_batch_id";
+		$hidden[] = "ata_id";
+		$hidden[] = "ATA ID";
+		$hidden[] = "sub_ata_id";
+		$hidden[] = "SUB ATA ID";
 		
 		
 		
@@ -343,6 +394,7 @@ class ExcelMgr_View_ImportExcel
 			}
 		}
 		
+		
 		/**  Get dimension of the worksheet  **/
 		$worksheetInfo = $objReader->listWorksheetInfo($this->file_meta['tmp_name']);
 		$this->log->debug($worksheetInfo);
@@ -353,12 +405,26 @@ class ExcelMgr_View_ImportExcel
 		
 		$SourceColums = $this->GetExcelColumns($objReader, $this->file_meta['tmp_name'], $worksheet_idx, $firstRowNames);
 		
+		$SourceColums = $this->removeHidden($SourceColums, $hidden);
+		
 		/**  Destination Columns  **/
 		$dest_options = array();
 		$dest_options['ignore']="(ignore)";
 		foreach($this->dest_meta as $column_name=>$schema) {
 			$dest_options[$column_name]=$column_name." (".$schema['DATA_TYPE']." ".$schema['LENGTH'].")";
 		}
+		
+		$dest_options = $this->removeHidden($dest_options, $hidden);
+		
+		$this->log->debug($SourceColums);
+		$this->log->debug($dest_options);
+		$mapping=array();
+		//if (!isset($_POST['worksheet_idx'])) {
+			foreach($SourceColums as $key=>$value) {
+				$mapping[$key]=$this->findClosestMatchingString($value,$dest_options);
+			}
+		//}
+		$this->log->debug($mapping);
 		
 		/* Set the template values */
 		$modalView->name=$this->name;
@@ -370,6 +436,8 @@ class ExcelMgr_View_ImportExcel
 		
 		$modalView->source_columns = $SourceColums;
 		$modalView->dest_options = $dest_options;
+		
+		$modalView->mapping = $mapping;
 		
 		/* Place our modal in with the other modals on current page */
 		$this->layout->modals .= $modalView->render('MapData.phtml');
@@ -400,8 +468,10 @@ class ExcelMgr_View_ImportExcel
 		
 		$this->run( dirname(__file__) . "/../Scripts/ExcelToTable.php ".$Batch_id,$Batch_Row->log_file);
 		
+		$j=0;
 		for($i=0;$i<5;$i++) {
 			sleep(1);
+			$j++;
 			if (!$this->daemonIsRunning($this->pid))
 				break;
 		}
@@ -415,12 +485,12 @@ class ExcelMgr_View_ImportExcel
 	public function run($scrip,$outputFile = '/dev/null')
 	{
 		$interpreter = $this->config->php_interpreter;
-		
+		//'%s %s > %s 1>&2 & echo $!',
 		putenv("APPLICATION_ENV=".APPLICATION_ENV); 		// APPLICATION_ENV
 		putenv("PHP_INCLUDE_PATH=". get_include_path()); 	// PHP_INCLUDE_PATH
 		putenv("APPLICATION_PATH=". APPLICATION_PATH);		// APPLICATION_PATH
 		$this->pid = shell_exec(sprintf(
-				'%s %s > %s 2>&1 & echo $!',
+				'%s %s > %s 2>&1',
 				$interpreter,
 				$scrip,
 				$outputFile

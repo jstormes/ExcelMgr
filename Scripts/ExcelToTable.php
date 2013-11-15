@@ -70,14 +70,17 @@ try {
 	$Batch_Row->save();
 	
 	$Loader = new ExcelMgr_ExcelToTable($batch_id);
-	$Loader->load();
+	if ($Loader->load())
+		$Batch_Row->status="Done";
+	else 
+		$Batch_Row->status="Crash";
 	
-	$Batch_Row->status="Done";
 	$Batch_Row->pid = null;
 	$Batch_Row->save();
 	echo "\nDone\n";
 }
 catch (Exception $Ex) {
+	echo "Failed: ".$Ex->getMessage();
 	$Batch_Row->status="Failed: ".$Ex->getMessage();
 	$Batch_Row->pid = null;
 	$Batch_Row->save();

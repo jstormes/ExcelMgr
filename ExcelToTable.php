@@ -28,8 +28,8 @@ class ExcelMgr_ExcelToTable
 		
 		$this->map        = json_decode($this->Batch_Row->map,true);
 		
-		$this->log->debug($this->batch_id);
-		$this->log->debug($this->Batch_Row);
+		//$this->log->debug($this->batch_id);
+		//$this->log->debug($this->Batch_Row);
 		print_r($this->map);
 		
 	}
@@ -75,6 +75,8 @@ class ExcelMgr_ExcelToTable
 		$BlockSize=250;
 		
 		$map=$this->map;
+		
+		
 		echo "Ttoal Rows ".$TotalRows."\n";
 		echo "Block Size ".$BlockSize."\n";
 		
@@ -108,36 +110,61 @@ class ExcelMgr_ExcelToTable
 			//sleep(1);
 			
 			foreach($sheetData as $Row=>$Columns){
-				print_r($map,true);
-				$NewRow=$this->destTable->fetchNew();
+				//print_r($map,true);
+				$NewRow=$this->destTable->createRow();
 				
+				if ($error_cnt>20)
+					break;
+				
+				//print_r($Columns);
 				foreach($Columns as $SourceColumnName=>$Value) {
-					if ($map[$SourceColumnName]!='ignore') {
-						//$this->log->info("Copying Column: ".$map[$SourceColumnName]);
-						$Column = $NewRow->$map[$SourceColumnName];
-						if ($metadata[$map[$SourceColumnName]]['DATA_TYPE']=='date') {
-							$NewRow->$map[$SourceColumnName] = date('c',($Value - 25569) * 86400);
+					//print_r($map);
+					//echo "column name: ".$map[$SourceColumnName]."\n";
+					//if (!empty($map[$SourceColumnName])) {
+					if (isset($map[$SourceColumnName])) {
+					//	echo "Column ".$map[$SourceColumnName]." is set";
+						if ($map[$SourceColumnName]!='ignore') {
+							//$this->log->info("Copying Column: ".$map[$SourceColumnName]);
+							//$Column = $NewRow->$map[$SourceColumnName];
+							if ($metadata[$map[$SourceColumnName]]['DATA_TYPE']=='date') {
+								$NewRow->$map[$SourceColumnName] = date('c',($Value - 25569) * 86400);
+							}
+							else {
+								//$NewRow->$map[$SourceColumnName]=$dbAdapter->quote($Value,$metadata[$map[$SourceColumnName]]['DATA_TYPE']) ;
+								//$NewRow->$map[$SourceColumnName]=$dbAdapter->quote($Value) ;
+								//if ($metadata[$map[$SourceColumnName]]['DATA_TYPE']=='text')
+								//	$NewRow->$map[$SourceColumnName]=$dbAdapter->quote($Value,$metadata[$map[$SourceColumnName]]['DATA_TYPE']) ;
+							//echo $map[$SourceColumnName]." = '".$Value."'\n";
+							$NewRow->{$map[$SourceColumnName]}=$Value;
+							if ($map[$SourceColumnName]=='descrepancy_txt') {
+								$NewRow->descrepancy_txt="$Value";
+								echo "descrepancy_txt $Value \n";
+							}
+								//echo "{$map[$SourceColumnName]}\n";
+								
+							}
+					
 						}
-						else {
-							$NewRow->$map[$SourceColumnName]=$dbAdapter->quote($Value);
-						}
-				
 					}
 				}
+				
 				try {
 					// Attempt insert
-					$this->log->info("Writing Row");
+					//$this->log->info("Writing Row");
 					$NewRow->project_id=$this->project_id;
 					$NewRow->excel_mgr_batch_id=$this->batch_id;
 					$NewRow->deleted=1;
+					print_r($NewRow->toArray());
 					$id=$NewRow->save();
+					
+					
 					//$this->log->info("Row $id written.");
 					
 				}
 				catch (Exception $Ex) {
 					// Catch errors
 					$error_cnt++;
-					echo "Error on row {$Row}, ".$Ex->getMessage();
+					echo "Error on row {$Row}, ".$Ex->getMessage()."\n";
 					$log_row = $LogTable->createRow();
 					$log_row->excel_mgr_batch_id = $this->batch_id;
 					$log_row->row = json_encode($Columns);
@@ -150,6 +177,10 @@ class ExcelMgr_ExcelToTable
 			unset($objPHPExcel);
 			unset($sheetData);
 		}
+		
+		if ($error_cnt!=0)
+			return false;
+		return true;
 	}
 	
 	
