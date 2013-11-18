@@ -36,7 +36,7 @@ class ExcelMgr_ExcelToTable
 	
 	
 	function load() {
-		$this->log->info("Starting Load Batch ".$this->batch_id.".");
+		//$this->log->info("Starting Load Batch ".$this->batch_id.".");
 		
 		$LogTable = new ExcelMgr_Models_ExcelMgrLog();
 		
@@ -48,7 +48,7 @@ class ExcelMgr_ExcelToTable
 		
 		$metadata = $this->destTable->info('metadata');
 		
-		$this->log->debug($this->tmp_name);
+		//$this->log->debug($this->tmp_name);
 		
 		//  $inputFileType = 'Excel5';
 		$inputFileType = 'Excel2007';
@@ -138,7 +138,7 @@ class ExcelMgr_ExcelToTable
 							$NewRow->{$map[$SourceColumnName]}=$Value;
 							if ($map[$SourceColumnName]=='descrepancy_txt') {
 								$NewRow->descrepancy_txt="$Value";
-								echo "descrepancy_txt $Value \n";
+							//	echo "descrepancy_txt $Value \n";
 							}
 								//echo "{$map[$SourceColumnName]}\n";
 								
@@ -154,7 +154,7 @@ class ExcelMgr_ExcelToTable
 					$NewRow->project_id=$this->project_id;
 					$NewRow->excel_mgr_batch_id=$this->batch_id;
 					$NewRow->deleted=1;
-					print_r($NewRow->toArray());
+					//print_r($NewRow->toArray());
 					$id=$NewRow->save();
 					
 					

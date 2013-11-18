@@ -36,7 +36,7 @@ class ExcelMgr_View_ImportExcel
 		$this->table_name 	= $this->destTable->info('name');
 		
 		$this->dest_meta=$destination->info('metadata');
-		$this->log->debug($this->dest_meta);
+		//$this->log->debug($this->dest_meta);
 		
 		/* The layout is not part of the current view
 		 * you have to grab a copy of the layout to
@@ -318,7 +318,7 @@ class ExcelMgr_View_ImportExcel
 	
 		foreach ($arr2 as $key => $value) {
 			$editDistance = levenshtein(strtolower($key),  strtolower($s));
-			$this->log->debug($key." ".$s." ".$editDistance);
+			//$this->log->debug($key." ".$s." ".$editDistance);
 	
 			// exact match
 			if ($editDistance == 0) {
@@ -331,7 +331,7 @@ class ExcelMgr_View_ImportExcel
 			}
 		}
 	
-		$this->log->debug($s." ".$closestMatchValue." ");
+		//$this->log->debug($s." ".$closestMatchValue." ");
 		return $closestMatchValue; // possible to return null if threshold hasn't been met
 	}
 	
@@ -397,7 +397,7 @@ class ExcelMgr_View_ImportExcel
 		
 		/**  Get dimension of the worksheet  **/
 		$worksheetInfo = $objReader->listWorksheetInfo($this->file_meta['tmp_name']);
-		$this->log->debug($worksheetInfo);
+		//$this->log->debug($worksheetInfo);
 		
 		$LastColumn = $worksheetInfo[$worksheet_idx]['lastColumnLetter'];
 		
@@ -416,15 +416,15 @@ class ExcelMgr_View_ImportExcel
 		
 		$dest_options = $this->removeHidden($dest_options, $hidden);
 		
-		$this->log->debug($SourceColums);
-		$this->log->debug($dest_options);
+		//$this->log->debug($SourceColums);
+		//$this->log->debug($dest_options);
 		$mapping=array();
 		//if (!isset($_POST['worksheet_idx'])) {
 			foreach($SourceColums as $key=>$value) {
 				$mapping[$key]=$this->findClosestMatchingString($value,$dest_options);
 			}
 		//}
-		$this->log->debug($mapping);
+		//$this->log->debug($mapping);
 		
 		/* Set the template values */
 		$modalView->name=$this->name;
@@ -466,15 +466,19 @@ class ExcelMgr_View_ImportExcel
 		
 		$Batch_id=$Batch_Row->save();
 		
+		$this->log->debug("Before run");
 		$this->run( dirname(__file__) . "/../Scripts/ExcelToTable.php ".$Batch_id,$Batch_Row->log_file);
 		
+		$this->log->debug("After Run");
 		$j=0;
 		for($i=0;$i<5;$i++) {
+			$this->log->debug("Sleep $i");
 			sleep(1);
 			$j++;
 			if (!$this->daemonIsRunning($this->pid))
 				break;
 		}
+		$this->log->debug("After wait loop");
 				
 		$modalView->log = file_get_contents($Batch_Row->log_file);
 		
@@ -490,7 +494,7 @@ class ExcelMgr_View_ImportExcel
 		putenv("PHP_INCLUDE_PATH=". get_include_path()); 	// PHP_INCLUDE_PATH
 		putenv("APPLICATION_PATH=". APPLICATION_PATH);		// APPLICATION_PATH
 		$this->pid = shell_exec(sprintf(
-				'%s %s > %s 2>&1',
+				'%s %s > %s 2>&1 &',
 				$interpreter,
 				$scrip,
 				$outputFile
