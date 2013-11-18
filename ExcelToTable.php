@@ -178,8 +178,12 @@ class ExcelMgr_ExcelToTable
 			unset($sheetData);
 		}
 		
-		if ($error_cnt!=0)
+		if ($error_cnt!=0) {
+			// Delete this batch from the table.
+			$where = $this->destTable->getAdapter()->quoteInto('excel_mgr_batch_id = ?', $this->batch_id);
+			$this->destTable->delete($where);
 			return false;
+		}
 		return true;
 	}
 	
