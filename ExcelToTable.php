@@ -114,14 +114,14 @@ class ExcelMgr_ExcelToTable
 			$this->Batch_Row->status="{$blockStart}/{$TotalRows}";
 			$this->Batch_Row->save();
 			echo "Load Excel Rows $blockStart to $blockEnd\n";
-			echo "{$blockStart}/{$TotalRows}\n";
+			//echo "{$blockStart}/{$TotalRows}\n";
 			//sleep(1);
 			
 			
 			array_pop($sheetData);
 			
 			foreach($sheetData as $Row=>$Columns){
-				echo "row $Row\n";
+				//echo "row $Row\n";
 				$NewRow=$this->destTable->createRow();
 				
 				if ($error_cnt>20)
@@ -129,30 +129,16 @@ class ExcelMgr_ExcelToTable
 				
 				//print_r($Columns);
 				foreach($Columns as $SourceColumnName=>$Value) {
-					//print_r($map);
-					//echo "column name: ".$map[$SourceColumnName]."\n";
-					//if (!empty($map[$SourceColumnName])) {
 					if (isset($map[$SourceColumnName])) {
-					//	echo "Column ".$map[$SourceColumnName]." is set";
 						if ($map[$SourceColumnName]!='ignore') {
-							//$this->log->info("Copying Column: ".$map[$SourceColumnName]);
-							//$Column = $NewRow->$map[$SourceColumnName];
 							if ($metadata[$map[$SourceColumnName]]['DATA_TYPE']=='date') {
 								$NewRow->$map[$SourceColumnName] = date('c',($Value - 25569) * 86400);
 							}
 							else {
-								//$NewRow->$map[$SourceColumnName]=$dbAdapter->quote($Value,$metadata[$map[$SourceColumnName]]['DATA_TYPE']) ;
-								//$NewRow->$map[$SourceColumnName]=$dbAdapter->quote($Value) ;
-								//if ($metadata[$map[$SourceColumnName]]['DATA_TYPE']=='text')
-								//	$NewRow->$map[$SourceColumnName]=$dbAdapter->quote($Value,$metadata[$map[$SourceColumnName]]['DATA_TYPE']) ;
-							//echo $map[$SourceColumnName]." = '".$Value."'\n";
-							$NewRow->{$map[$SourceColumnName]}=$Value;
-							if ($map[$SourceColumnName]=='descrepancy_txt') {
-								$NewRow->descrepancy_txt="$Value";
-							//	echo "descrepancy_txt $Value \n";
-							}
-								//echo "{$map[$SourceColumnName]}\n";
-								
+								$NewRow->{$map[$SourceColumnName]}=$Value;
+								if ($map[$SourceColumnName]=='descrepancy_txt') {
+									$NewRow->descrepancy_txt="$Value";
+								}	
 							}
 					
 						}
@@ -185,7 +171,7 @@ class ExcelMgr_ExcelToTable
 				gc_collect_cycles();
 				
 			}
-			echo "********************\n";
+			//echo "********************\n";
 			$objPHPExcel->disconnectWorksheets();
 			unset($objPHPExcel);
 			unset($sheetData);

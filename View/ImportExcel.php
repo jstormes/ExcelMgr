@@ -36,7 +36,11 @@ class ExcelMgr_View_ImportExcel
 		$this->table_name 	= $this->destTable->info('name');
 		
 		$this->dest_meta=$destination->info('metadata');
-		//$this->log->debug($this->dest_meta);
+		
+		$this->primary_key=$destination->info('primary');
+		$this->primary_key=$this->primary_key[1];
+		
+		//$this->log->debug($this->primary_key);
 		
 		/* The layout is not part of the current view
 		 * you have to grab a copy of the layout to
@@ -367,17 +371,13 @@ class ExcelMgr_View_ImportExcel
 		
 		$hidden=array();
 		$hidden[] = "project_id";
-		$hidden[] = "coding_id";
-		$hidden[] = "deleted";
-		$hidden[] = "crea_dtm";
-		$hidden[] = "crea_usr_id";
-		$hidden[] = "updt_dtm";
-		$hidden[] = "updt_usr_id";
 		$hidden[] = "excel_mgr_batch_id";
-		$hidden[] = "ata_id";
-		$hidden[] = "ATA ID";
-		$hidden[] = "sub_ata_id";
-		$hidden[] = "SUB ATA ID";
+		$hidden[] = "deleted";
+		$hidden[] = "updt_usr_id";
+		$hidden[] = "updt_dtm";
+		$hidden[] = "crea_usr_id";
+		$hidden[] = "crea_dtm";
+		$hidden[] = $this->primary_key;
 		
 		
 		
@@ -428,6 +428,8 @@ class ExcelMgr_View_ImportExcel
 		
 		/* Set the template values */
 		$modalView->name=$this->name;
+		
+		$modalView->Title=$this->options['Title'];
 		$modalView->file_meta = $this->hidden_array("file_meta", $this->file_meta);
 		
 		$modalView->worksheetNames=$worksheetNames;
@@ -482,7 +484,10 @@ class ExcelMgr_View_ImportExcel
 				
 		$modalView->log = file_get_contents($Batch_Row->log_file);
 		
-		$this->layout->modals .= $modalView->render('LoadData.phtml');
+		//if ($this->daemonIsRunning($this->pid))
+			$this->layout->modals .= $modalView->render('LoadStatus.phtml');
+		//else
+		//	$this->layout->modals .= $modalView->render('LoadData.phtml');
 		
 	}
 	
