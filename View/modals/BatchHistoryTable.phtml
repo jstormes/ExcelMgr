@@ -9,7 +9,7 @@
 						<div class="col-md-12">
 							<table class="table">
 		  						<tr>
-		  							<th>Date/Time</th><th>File</th><th>Status</th><th>Options</th>
+		  							<th>Date/Time</th><th>File</th><th>Status</th>
 		  						</tr>
 		  						<?php 
 		  						$i=0;
@@ -30,13 +30,7 @@
 		  									<?php echo $record['status']?>
 		  								<?php }?>
 		  							</td>
-		  							<td>
-		  								<?php if ($i==1) {?>
-		  								<a href="#"
-		  									onclick="$('#delete_id').val('<?php echo $record['excel_mgr_batch_id']; ?>');$(this).closest('form').submit();">
-		  								Delete</a>
-		  								<?php }?>
-		  							</td>
+		  							
 		  						</tr>
 		  						<?php }?>
 							</table>	
