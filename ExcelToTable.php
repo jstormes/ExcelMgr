@@ -87,18 +87,25 @@ class ExcelMgr_ExcelToTable
 			
 			$rows = 10;
 			$blockStart = $BlockSize*$i;
+			$blockEnd = ($blockStart+$BlockSize);
 			if ($blockStart==0) {
-				if ($this->first_row_names==1)
+				if ($this->first_row_names==1) {
 					$blockStart=2;
-				else
-					$blockStart=1; 
+					//$blockEnd = ($blockStart+$BlockSize)-1;
+				}
+				else {
+					$blockStart=1;
+					//$blockEnd = ($blockStart+$BlockSize)-1;
+				}
 			}
+			
 				
-			$blockEnd = ($blockStart+$BlockSize)-1;
+			
 			if ($blockEnd>$TotalRows)
-				$blockEnd=$TotalRows;  
-			$chunkFilter->setRows($BlockSize*$i,$BlockSize);
+				$blockEnd=$TotalRows+1;  
+			$chunkFilter->setRows($blockStart,$blockEnd-$blockStart);
 			$objPHPExcel = $objReader->load($this->tmp_name);
+			//$blockEnd2 = $blockEnd-1;
 			$sheetData = $objPHPExcel->getActiveSheet()->rangeToArray("A{$blockStart}:{$LastColumn}{$blockEnd}",null,false,false,true);
 			//$columns = $sheetData[1];
 			//echo "\n\n\n****************************************\n";
@@ -106,11 +113,15 @@ class ExcelMgr_ExcelToTable
 			//print_r($sheetData);
 			$this->Batch_Row->status="{$blockStart}/{$TotalRows}";
 			$this->Batch_Row->save();
+			echo "Load Excel Rows $blockStart to $blockEnd\n";
 			echo "{$blockStart}/{$TotalRows}\n";
 			//sleep(1);
 			
+			
+			array_pop($sheetData);
+			
 			foreach($sheetData as $Row=>$Columns){
-				//print_r($map,true);
+				echo "row $Row\n";
 				$NewRow=$this->destTable->createRow();
 				
 				if ($error_cnt>20)
@@ -172,7 +183,9 @@ class ExcelMgr_ExcelToTable
 				}
 				unset($NewRow);
 				gc_collect_cycles();
+				
 			}
+			echo "********************\n";
 			$objPHPExcel->disconnectWorksheets();
 			unset($objPHPExcel);
 			unset($sheetData);
