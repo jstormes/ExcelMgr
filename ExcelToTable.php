@@ -81,6 +81,9 @@ class ExcelMgr_ExcelToTable
 		}
 		
 		$map=$map2;
+		$map[] = "project_id";
+		$map[] = "excel_mgr_batch_id";
+		$map[] = "deleted";
 		
 		$str_columns = implode(",",$map);
 		$tmp_str = array();
@@ -104,26 +107,37 @@ class ExcelMgr_ExcelToTable
 		$ws=$xlsx->worksheet( $this->tab );
 		list($cols,) = $xlsx->dimension( $this->tab );
 		
+		$backgound_columns = array();
+		$backgound_columns[] = 'project_id';
+		$backgound_columns[] = 'excel_mgr_batch_id';
+		$backgound_columns[] = 'deleted';
+		
 		for($i=1;$i<$TotalRows;$i++) {
 			$row = $xlsx->row($i,$ws,$cols);
 			
 			$new_row = array();
 			foreach($map as $k=>$v) {
 			
-				if ($metadata[$map[$k]]['DATA_TYPE']=='date')
-					$new_row[]=date('c',($row[$k] - 25569) * 86400);
-				else {
-					if ($metadata[$map[$k]]['DATA_TYPE']=='varchar') {
-						if (strlen($row[$k])>$metadata[$map[$k]]['LENGTH']) {
-							$error_cnt++;
-							echo "Error on row {$i} data to to big for column {$v}.\n";
+				if (!in_array($v,$backgound_columns)) {
+				
+					if ($metadata[$map[$k]]['DATA_TYPE']=='date')
+						$new_row[]=date('c',($row[$k] - 25569) * 86400);
+					else {
+						if ($metadata[$map[$k]]['DATA_TYPE']=='varchar') {
+							if (strlen($row[$k])>$metadata[$map[$k]]['LENGTH']) {
+								$error_cnt++;
+								echo "Error on row {$i} data to to big for column {$v}.\n";
+							}
 						}
+						$new_row[]=$row[$k];
 					}
-					$new_row[]=$row[$k];
 				}
 			}
 			
 			$row=$new_row;
+			$row[]=$this->project_id;
+			$row[]=$this->batch_id;
+			$row[]=1;
 			
 			
 			if ($error_cnt>20)
