@@ -87,7 +87,7 @@ class ExcelMgr_ExcelToTable
 		
 		//$str_columns = implode(",",$map);
 		
-		$str_columns .= " (`".implode("`, `", map)."`)";
+		$str_columns .= " (`".implode("`, `", $map)."`)";
 		
 		
 		
