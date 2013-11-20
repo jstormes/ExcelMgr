@@ -9,7 +9,7 @@ class ExcelMgr_ExcelToTable
 	
 	
 	public function __construct($batch_id) {
-		ini_set('memory_limit', '4G');
+		ini_set('memory_limit', '2G');
 		
 		$this->log = Zend_Registry::get('log');
 		
@@ -30,7 +30,7 @@ class ExcelMgr_ExcelToTable
 		
 		//$this->log->debug($this->batch_id);
 		//$this->log->debug($this->Batch_Row);
-		print_r($this->map);
+		//print_r($this->map);
 		
 	}
 	
@@ -51,28 +51,131 @@ class ExcelMgr_ExcelToTable
 		//$this->log->debug($this->tmp_name);
 		
 		//  $inputFileType = 'Excel5';
-		$inputFileType = 'Excel2007';
+		//$inputFileType = 'Excel2007';
 		//	$inputFileType = 'Excel2003XML';
 		//	$inputFileType = 'OOCalc';
 		//	$inputFileType = 'Gnumeric';
 		
 		/* Create our Excel reader */
-		$objReader = PHPExcel_IOFactory::createReader($inputFileType);
-		$worksheetNames = $objReader->listWorksheetNames($this->tmp_name);
-		$worksheetInfo = $objReader->listWorksheetInfo($this->tmp_name);
+		//$objReader = PHPExcel_IOFactory::createReader($inputFileType);
+		//$worksheetNames = $objReader->listWorksheetNames($this->tmp_name);
+		//$worksheetInfo = $objReader->listWorksheetInfo($this->tmp_name);
+		$xlsx = new ExcelMgr_SimpleXLSX($this->tmp_name);
 		
-		$TotalRows = $worksheetInfo[$this->tab]['totalRows'];
-		$LastColumn = $worksheetInfo[$this->tab]['lastColumnLetter'];
+		$worksheetDimension = $xlsx->dimension($this->tab);
 		
-		$objReader->setLoadSheetsOnly($worksheetNames[$this->tab]);
-		$objReader->setReadDataOnly(true); /* this */
+		//print_r($worksheetDimension);
+		
+		$LastColumn = $worksheetDimension[0];
+		$TotalRows	= $worksheetDimension[1];
+		
+		
+		echo "Total Rows ".$TotalRows."\n";
+		$error_cnt=0;
+		$map=$this->map;
+		
+		$map2=array();
+		foreach($map as $k=>$v) {
+			if ($v!='ignore')
+				$map2[$k]=$v;
+		}
+		
+		$map=$map2;
+		
+		$str_columns = implode(",",$map);
+		$tmp_str = array();
+		foreach ($map as $m)
+			$tmp_str[]="?";
+		
+		$pos_str = implode(",",$tmp_str);
+		
+		$sql = "INSERT INTO {$this->table_name} ({$str_columns})
+				VALUES ({$pos_str})";
+		
+		echo "\n";
+		print_r($map);
+		echo "\n";
+		print_r($sql);
+		echo "\n";
+		
+			
+		$stmt = $dbAdapter->prepare($sql);
+		
+		$ws=$xlsx->worksheet( $this->tab );
+		list($cols,) = $xlsx->dimension( $this->tab );
+		
+		for($i=1;$i<$TotalRows;$i++) {
+			$row = $xlsx->row($i,$ws,$cols);
+			
+			$new_row = array();
+			foreach($map as $k=>$v) {
+			
+				if ($metadata[$map[$k]]['DATA_TYPE']=='date')
+					$new_row[]=date('c',($row[$k] - 25569) * 86400);
+				else {
+					if ($metadata[$map[$k]]['DATA_TYPE']=='varchar') {
+						if (strlen($row[$k])>$metadata[$map[$k]]['LENGTH']) {
+							$error_cnt++;
+							echo "Error on row {$i} data to to big for column {$v}.\n";
+						}
+					}
+					$new_row[]=$row[$k];
+				}
+			}
+			
+			$row=$new_row;
+			
+			
+			if ($error_cnt>20)
+				break;
+
+			if ($i%1000==0) {
+				$this->Batch_Row->status="{$i}/{$TotalRows}";
+				$this->Batch_Row->save();
+				gc_collect_cycles();
+			}
+			
+			try {
+				$stmt->execute($row);	
+				
+			}
+			catch (Exception $Ex) {
+				// Catch errors
+				$error_cnt++;
+				echo "Error on row {$i}, ".$Ex->getMessage()."\n";
+						$log_row = $LogTable->createRow();
+						$log_row->excel_mgr_batch_id = $this->batch_id;
+						$log_row->row = json_encode($row);
+						$log_row->msg = $Ex->getMessage();
+						print_r($row);
+			}
+			unset($row);
+			unset($new_row);
+			//gc_collect_cycles();
+			
+		}
+		
+		
+		if ($error_cnt!=0) {
+			// Delete this batch from the table.
+			$where = $this->destTable->getAdapter()->quoteInto('excel_mgr_batch_id = ?', $this->batch_id);
+			$this->destTable->delete($where);
+			return false;
+		}
+		return true;
+		
+		//$TotalRows = $worksheetInfo[$this->tab]['totalRows'];
+		//$LastColumn = $worksheetInfo[$this->tab]['lastColumnLetter'];
+		
+		//$objReader->setLoadSheetsOnly($worksheetNames[$this->tab]);
+		//$objReader->setReadDataOnly(true); /* this */
 		
 		/**  Create a new Instance of our Read Filter  **/
-		$chunkFilter = new ExcelMgr_chunkReadFilter();
+		//$chunkFilter = new ExcelMgr_chunkReadFilter();
 		/**  Tell the Reader that we want to use the Read Filter  **/
-		$objReader->setReadFilter($chunkFilter);
+		//$objReader->setReadFilter($chunkFilter);
 		
-		$BlockSize=250;
+		//$BlockSize=250;
 		
 		$map=$this->map;
 		

@@ -352,6 +352,8 @@ class ExcelMgr_View_ImportExcel
 		return $ary;
 	}
 	
+	
+	
 	public function MapData() {
 		
 		/* Create modal by using the Zend_View similar to using the
@@ -360,14 +362,17 @@ class ExcelMgr_View_ImportExcel
 		$modalView->setScriptPath( dirname(__file__) . '/modals/' );
 		
 		//  $inputFileType = 'Excel5';
-		$inputFileType = 'Excel2007';
+		//$inputFileType = 'Excel2007';
 		//	$inputFileType = 'Excel2003XML';
 		//	$inputFileType = 'OOCalc';
 		//	$inputFileType = 'Gnumeric';
 		
 		/* Create our Excel reader */
-		$objReader = PHPExcel_IOFactory::createReader($inputFileType);
-		$worksheetNames = $objReader->listWorksheetNames($this->file_meta['tmp_name']);
+		//$objReader = PHPExcel_IOFactory::createReader($inputFileType);
+		//$worksheetNames = $objReader->listWorksheetNames($this->file_meta['tmp_name']);
+		
+		$xlsx = new ExcelMgr_SimpleXLSX($this->file_meta['tmp_name']);
+		$worksheetNames = $xlsx->sheetNames();
 		
 		$hidden=array();
 		$hidden[] = "project_id";
@@ -383,7 +388,7 @@ class ExcelMgr_View_ImportExcel
 		
 		/* Get our source tab and determine if first row contains column names */
 		$firstRowNames=1;
-		$worksheet_idx=0;
+		$worksheet_idx=1;
 		if (isset($_POST['worksheet_idx'])) {
 			$worksheet_idx=$_POST['worksheet_idx'];
 			if (isset($_POST['firstRowNames'])) {
@@ -394,18 +399,23 @@ class ExcelMgr_View_ImportExcel
 			}
 		}
 		
+		$ws = $xlsx->worksheet($worksheet_idx);
+		list($cols,) = $xlsx->dimension( $worksheet_idx );
+		$SourceColums = $xlsx->row(0,$ws,$cols);
+		//$this->log->debug($SourceColums);
+		
 		
 		/**  Get dimension of the worksheet  **/
-		$worksheetInfo = $objReader->listWorksheetInfo($this->file_meta['tmp_name']);
+		//$worksheetInfo = $objReader->listWorksheetInfo($this->file_meta['tmp_name']);
 		//$this->log->debug($worksheetInfo);
 		
-		$LastColumn = $worksheetInfo[$worksheet_idx]['lastColumnLetter'];
+		//$LastColumn = $worksheetInfo[$worksheet_idx]['lastColumnLetter'];
 		
-		$objReader->setLoadSheetsOnly($worksheetNames[$worksheet_idx]);
+		//$objReader->setLoadSheetsOnly($worksheetNames[$worksheet_idx]);
 		
-		$SourceColums = $this->GetExcelColumns($objReader, $this->file_meta['tmp_name'], $worksheet_idx, $firstRowNames);
+		//$SourceColums = $this->GetExcelColumns($objReader, $this->file_meta['tmp_name'], $worksheet_idx, $firstRowNames);
 		
-		$SourceColums = $this->removeHidden($SourceColums, $hidden);
+		//$SourceColums = $this->removeHidden($SourceColums, $hidden);
 		
 		/**  Destination Columns  **/
 		$dest_options = array();
@@ -419,11 +429,14 @@ class ExcelMgr_View_ImportExcel
 		//$this->log->debug($SourceColums);
 		//$this->log->debug($dest_options);
 		$mapping=array();
-		//if (!isset($_POST['worksheet_idx'])) {
+		//if (!isset($_POST['mapping'])) {
 			foreach($SourceColums as $key=>$value) {
 				$mapping[$key]=$this->findClosestMatchingString($value,$dest_options);
 			}
 		//}
+		
+		
+		//$this->log->debug("mapping");
 		//$this->log->debug($mapping);
 		
 		/* Set the template values */
