@@ -77,7 +77,7 @@ class ExcelMgr_ExcelToTable
 		$map2=array();
 		foreach($map as $k=>$v) {
 			if ($v!='ignore')
-				$map2[$k]=$v;
+				$map2[$k]="`".$v."`";
 		}
 		
 		$map=$map2;
@@ -85,7 +85,7 @@ class ExcelMgr_ExcelToTable
 		$map[] = "excel_mgr_batch_id";
 		$map[] = "deleted";
 		
-		$str_columns = implode(",","`".$map."`");
+		$str_columns = implode(",",$map);
 		$tmp_str = array();
 		foreach ($map as $m)
 			$tmp_str[]="?";
