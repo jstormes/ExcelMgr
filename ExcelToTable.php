@@ -85,7 +85,7 @@ class ExcelMgr_ExcelToTable
 		$map[] = "excel_mgr_batch_id";
 		$map[] = "deleted";
 		
-		$str_columns = implode(",",$map);
+		$str_columns = implode(",","`".$map."`");
 		$tmp_str = array();
 		foreach ($map as $m)
 			$tmp_str[]="?";
