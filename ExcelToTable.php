@@ -87,7 +87,7 @@ class ExcelMgr_ExcelToTable
 		
 		//$str_columns = implode(",",$map);
 		
-		$str_columns .= " (`".implode("`, `", $map)."`)";
+		$str_columns = " (`".implode("`, `", $map)."`)";
 		
 		
 		
@@ -134,7 +134,17 @@ class ExcelMgr_ExcelToTable
 								echo "Error on row {$i} data to to big for column {$v}.\n";
 							}
 						}
-						$new_row[]=$row[$k];
+						switch ($metadata[$map[$k]]['DATA_TYPE']) {
+							case "bigint":
+							case "int":
+								$new_row[]=(int)$row[$k];
+								break;
+							case "varchar":
+							case "text":
+								$new_row[]=(string)$row[$k];
+								break;
+						}
+						
 					}
 				}
 			}
