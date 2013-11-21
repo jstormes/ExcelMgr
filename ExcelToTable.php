@@ -36,6 +36,8 @@ class ExcelMgr_ExcelToTable
 	
 	
 	function load() {
+		
+		$start_time = time();
 		//$this->log->info("Starting Load Batch ".$this->batch_id.".");
 		
 		$LogTable = new ExcelMgr_Models_ExcelMgrLog();
@@ -161,7 +163,10 @@ class ExcelMgr_ExcelToTable
 			if ($i%1000==0) {
 				$this->Batch_Row->status="{$i}/{$TotalRows}";
 				$this->Batch_Row->save();
-				gc_collect_cycles();
+				//unset($xlsx);
+				//gc_collect_cycles();
+				//$xlsx = new ExcelMgr_SimpleXLSX($this->tmp_name);
+				
 			}
 			
 			try {
@@ -191,6 +196,12 @@ class ExcelMgr_ExcelToTable
 			$this->destTable->delete($where);
 			return false;
 		}
+		
+		$end_time = time();
+		
+		echo "start time: {$start_time}\n";
+		echo "end time: {$end_time}\n";
+		echo "run time: ".$end_time-$start_time."\n";
 		return true;
 		
 		//$TotalRows = $worksheetInfo[$this->tab]['totalRows'];

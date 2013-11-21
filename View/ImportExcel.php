@@ -512,7 +512,7 @@ class ExcelMgr_View_ImportExcel
 		putenv("PHP_INCLUDE_PATH=". get_include_path()); 	// PHP_INCLUDE_PATH
 		putenv("APPLICATION_PATH=". APPLICATION_PATH);		// APPLICATION_PATH
 		$this->pid = shell_exec(sprintf(
-				'%s %s > %s 2>&1 &',
+				'nohup %s %s > %s 2>&1 &',
 				$interpreter,
 				$scrip,
 				$outputFile
