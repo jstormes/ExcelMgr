@@ -261,6 +261,42 @@ class ExcelMgr_View_ImportExcel
 		$this->layout->modals .= $modalView->render('ModalUpload.phtml');
 	}
 	
+	
+	public function GetCSVColumns($objReader, $inputFileName ,$source_tab_idx, $firstRowNames) {
+		/**  Get dimension of the worksheet  **/
+		$worksheetInfo = $objReader->listWorksheetInfo($this->file_meta['tmp_name']);
+		$LastColumn = $worksheetInfo[$source_tab_idx]['lastColumnLetter'];
+	
+		/**  If we have no columns  **/
+		if ($LastColumn=='@')
+			return array();
+	
+		/**  Create a new Instance of our Read Filter  **/
+		$chunkFilter = new ExcelMgr_chunkReadFilter();
+		/**  Tell the Reader that we want to use the Read Filter  **/
+		$objReader->setReadFilter($chunkFilter);
+		/**  Starting at row 1 read 1 row  **/
+		$chunkFilter->setRows(1,1);
+		$objPHPExcel = $objReader->load($inputFileName);
+		$sheetData = $objPHPExcel->getActiveSheet()->rangeToArray("A1:{$LastColumn}1",null,true,true,true);
+		$columns = $sheetData[1];
+	
+		/**  Cleanup  **/
+		unset($objPHPExcel);
+		unset($sheetData);
+	
+		/**  Return Values  **/
+		if ($firstRowNames==1) {
+			return $columns;
+		}
+		else {
+			$new_columns = array();
+			foreach ($columns as $Name=>$Value)
+				$new_columns[$Name]=$Name;
+			return $new_columns;
+		}
+	}
+	
 	/**
 	 * Returns an array of source column names for the given tab index.
 	 * the returned array will have the Excel column name as the index.
@@ -512,7 +548,7 @@ class ExcelMgr_View_ImportExcel
 		putenv("PHP_INCLUDE_PATH=". get_include_path()); 	// PHP_INCLUDE_PATH
 		putenv("APPLICATION_PATH=". APPLICATION_PATH);		// APPLICATION_PATH
 		$this->pid = shell_exec(sprintf(
-				'nohup %s %s > %s 2>&1 &',
+				'%s %s > %s 2>&1 &',
 				$interpreter,
 				$scrip,
 				$outputFile
