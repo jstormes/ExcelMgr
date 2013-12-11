@@ -274,15 +274,30 @@ class ExcelMgr_ExcelToTable
 				foreach($Columns as $SourceColumnName=>$Value) {
 					if (isset($map[$SourceColumnName])) {
 						if ($map[$SourceColumnName]!='ignore') {
-							if ($metadata[$map[$SourceColumnName]]['DATA_TYPE']=='date') {
-								$NewRow->$map[$SourceColumnName] = date('c',($Value - 25569) * 86400);
+							switch ($metadata[$map[$SourceColumnName]]['DATA_TYPE']) {
+								case 'date':
+									$NewRow->$map[$SourceColumnName] = date('c',($Value - 25569) * 86400);
+									break;
+								case 'int':
+								case 'bigint':
+									if (is_numeric($Value))
+										$NewRow->{$map[$SourceColumnName]}=$Value;
+									else 
+										$NewRow->{$map[$SourceColumnName]}=null;
+									break;
+								default:
+									$NewRow->{$map[$SourceColumnName]}=$Value;
+									break;
 							}
-							else {
-								$NewRow->{$map[$SourceColumnName]}=$Value;
-								if ($map[$SourceColumnName]=='descrepancy_txt') {
-									$NewRow->descrepancy_txt="$Value";
-								}	
-							}
+// 							if ($metadata[$map[$SourceColumnName]]['DATA_TYPE']=='date') {
+// 								$NewRow->$map[$SourceColumnName] = date('c',($Value - 25569) * 86400);
+// 							}
+// 							else {
+// 								$NewRow->{$map[$SourceColumnName]}=$Value;
+// 								if ($map[$SourceColumnName]=='descrepancy_txt') {
+// 									$NewRow->descrepancy_txt="$Value";
+// 								}	
+// 							}
 					
 						}
 					}
