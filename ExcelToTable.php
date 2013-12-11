@@ -139,7 +139,10 @@ class ExcelMgr_ExcelToTable
 						switch ($metadata[$map[$k]]['DATA_TYPE']) {
 							case "bigint":
 							case "int":
-								$new_row[]=(int)$row[$k];
+								if (is_numeric($row[$k]))
+									$new_row[]=(int)$row[$k];
+								else 
+									$new_row[]=null;
 								break;
 							case "varchar":
 							case "text":
