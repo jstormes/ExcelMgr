@@ -88,6 +88,20 @@ class ExcelMgr_View_ImportExcel
 		/** TODO: This logic SUCKS, fix it!!! js  ***/
 		
 		
+		// Always load the upload modal screen.
+		$this->ModalUpload();
+		
+		if (isset($_POST['control_name'])) {
+			if ($_POST['control_name']!=$this->name)
+				return;
+		}
+		else {
+			if (isset($_GET['control_name']))
+				if ($_GET['control_name']!=$this->name)
+					return;
+		}
+		
+		
 		/*
 		 * Figure out what step in the load we are on:
 		*
@@ -133,7 +147,8 @@ class ExcelMgr_View_ImportExcel
 				$step=5;
 		}
 		
-		$this->ModalUpload();
+		
+		
 		switch ($step) {
 			case 0:
 				$this->log->debug("step0");

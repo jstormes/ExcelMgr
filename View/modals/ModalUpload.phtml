@@ -20,6 +20,8 @@
         </script>
 			<form method='post' enctype='multipart/form-data'
 				onsubmit='return <?php echo $this->name; ?>_on_submit()'>
+				<input type="hidden" name="control_name" value="<?php echo $this->name?>"></input>
+				<input type="hidden" name="step" value="0"></input>
 				<div class='modal-header'>
 					<button type='button' class='close' data-dismiss='modal'
 						aria-hidden='true'>&times;</button>
@@ -40,7 +42,7 @@
 						</div>
 					</div>
 					<!--  Begin history table -->
-					<div id="BatchHistoryTable">
+					<div id="BatchHistoryTable<?php echo $this->name; ?>">
 					
 					</div>
 				</div>
@@ -73,8 +75,8 @@ var timer;
 
 function doPoll(){
     $.post('ajax/test.html', function(data) {
-    	$( "#BatchHistoryTable" ).load( window.location.pathname + "?batchtablehistory=true" );
-    	timer = setTimeout(doPoll,5000);
+    	$( "#BatchHistoryTable<?php echo $this->name; ?>" ).load( window.location.pathname + "?batchtablehistory=true&control_name=<?php echo $this->name; ?>" );
+    	//timer = setTimeout(doPoll,5000);
     });
 }
 

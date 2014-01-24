@@ -12,7 +12,7 @@
 </style>
 
 <!-- Modal Column Matching -->
-<div class='modal' id='testmod' tabindex='-1' role='dialog'
+<div class='modal' id='<?php echo $this->name?>loadmod' tabindex='-1' role='dialog'
 	aria-labelledby='myModalLabel' aria-hidden='true'>
 	<div class='modal-dialog'>
 		<div class='modal-content'>
@@ -45,8 +45,8 @@
 </div>
 <!-- /.modal -->
 <script>
-$( document ).ready(function() {$('#testmod').modal();});
-$('#testmod').on('hidden.bs.modal', function () {
+$( document ).ready(function() {$('#<?php echo $this->name?>loadmod').modal();});
+$('#<?php echo $this->name?>loadmod').on('hidden.bs.modal', function () {
 	window.location = document.URL;
 	});
 
