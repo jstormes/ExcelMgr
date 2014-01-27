@@ -1,0 +1,72 @@
+<!-- Modal <?php echo $this->name; ?> Load -->
+<div class='modal fade' id='<?php echo $this->name; ?>_load' tabindex='-1'
+	role='dialog' aria-labelledby='myModalLabel' aria-hidden='true'>
+	<div class='modal-dialog'>
+		<div class='modal-content'>
+			<form method='post' enctype='multipart/form-data'>
+				<input type="hidden" name="control_name" value="<?php echo $this->name; ?>"></input>
+				<input type="hidden" name="project_id" value="<?php echo $this->project_id; ?>"></input>
+				<input type="hidden" name="table_name" value="<?php echo $this->table_name; ?>"></input>
+				<input type="hidden" name="form_name" value="upload"></input>
+				<div class='modal-header'>
+					<button type='button' class='close' data-dismiss='modal'
+						aria-hidden='true'>&times;</button>
+					<h4 class='modal-title'>Load History Status</h4>
+				</div>
+				<div class='modal-body'>
+
+					<!--  Begin history table -->
+					<div id="BatchHistoryTable<?php echo $this->name; ?>_load">
+					
+					</div>
+				</div>
+				<div class='modal-footer'>
+					<button type='button' class='btn btn-default' data-dismiss='modal'>Close</button>
+					
+				</div>
+			</form>
+		</div>
+		<!-- /.modal-content -->
+	</div>
+	<!-- /.modal-dialog -->
+</div>
+<!-- /.modal -->
+
+
+<script>
+
+$( document ).ready(function() {$('#<?php echo $this->name; ?>_load').modal();});
+
+
+var <?php echo $this->name; ?>_timer;
+
+function <?php echo $this->name; ?>_doPoll(){
+
+		// Parameters for AJAX partial call
+        var parameters = '';
+        parameters += "?excel_mgr_ajax=true";  // required for all AJAX calls in ExcelMgr.
+        parameters += "&control_name=<?php echo $this->name; ?>";
+        parameters += "&procedure=load_history";
+        parameters += "&project_id=<?php echo $this->project_id; ?>";
+        parameters += "&table_name=<?php echo $this->table_name; ?>";
+        
+    	$( "#BatchHistoryTable<?php echo $this->name; ?>_load" )
+    		.load( window.location.pathname + parameters );
+    	<?php echo $this->name; ?>_timer = setTimeout(<?php echo $this->name; ?>_doPoll,5000);
+
+}
+
+// start polling the batch history when the modal is shown
+$('#<?php echo $this->name; ?>_load').on('show.bs.modal', function () {
+	<?php echo $this->name; ?>_doPoll();
+})
+	
+// stop polling the batch history when the modal is hidden
+$('#<?php echo $this->name; ?>_load').on('hidden.bs.modal', function () {
+	clearTimeout(<?php echo $this->name; ?>_timer);
+	window.location = document.URL;
+    return false;
+})
+
+</script>
+<!-- END Modal <?php echo $this->name; ?> Load -->

@@ -9,6 +9,24 @@ the load should go allow faster.
 
 http://stackoverflow.com/questions/45953/php-execute-a-background-process
 
+REQUIRED INI SETTINGS:
+======================
+
+
+OPTIONAL INI SETTINGS:
+======================
+
+
+CODE USAGE EXAMPLE:
+===================
+
+	$ImportFileLeft = new ExcelMgr_View_ImportExcel("LeftUpload", $this->GridConfigurationLeft->DataModel, $this->project_id,
+  			array("HTML"=>"<i style='font-size: 12pt;' class='fa fa-upload'></i>",
+      		"Help"=>"Select Excel file to upload."
+      		));
+	$this->view->load_left=$ImportFileLeft->Button();
+
+
 PATHS:
 ======
 /ExcelMgr/View/Modals/...
@@ -19,8 +37,11 @@ PATHS:
 /ExcelMgr/ExcelToTable.php
 /ExcelMgr/TableToExcel.php
 
+TEMP FILES:
+===========
 
-Tables:
+
+TABLES:
 =======
 
 excel_mgr_batch:

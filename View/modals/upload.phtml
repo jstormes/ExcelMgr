@@ -1,0 +1,104 @@
+<!-- ExcelMgr <?php echo $this->name; ?> Upload Modal -->
+<div class='modal fade' id='<?php echo $this->name; ?>_upload_modal' tabindex='-1' role='dialog' aria-labelledby='myModalLabel' aria-hidden='true'>
+	<div class='modal-dialog'>
+		<div class='modal-content'>
+			<script>
+	        function <?php echo $this->name; ?>_upload_on_submit() {
+		      if (typeof document.getElementById('<?php echo $this->name; ?>_upload').files != 'undefined') {
+	            if (typeof document.getElementById('<?php echo $this->name; ?>_upload').files[0] != 'undefined') {
+			      if (document.getElementById('<?php echo $this->name; ?>_upload').files[0].size > <?php echo $this->MAX_FILE_SIZE; ?>) {
+			        alert('File size is too large.');
+			        return false;
+			      }
+			    }
+		      }
+	          $('#<?php echo $this->name; ?>_upload_modal').modal('hide');
+	          $('#<?php echo $this->name; ?>_pleaseWaitDialog').modal();
+			  return true;
+			}
+        </script>
+			<form method='post' enctype='multipart/form-data'
+				onsubmit='return <?php echo $this->name; ?>_upload_on_submit()'>
+				<input type="hidden" name="control_name" value="<?php echo $this->name; ?>"></input>
+				<input type="hidden" name="project_id" value="<?php echo $this->project_id; ?>"></input>
+				<input type="hidden" name="table_name" value="<?php echo $this->table_name; ?>"></input>
+				<input type="hidden" name="form_name" value="upload"></input>
+				<div class='modal-header'>
+					<button type='button' class='close' data-dismiss='modal'
+						aria-hidden='true'>&times;</button>
+					<h4 class='modal-title'><?php echo $this->Title; ?></h4>
+				</div>
+				<div class='modal-body'>
+					<div class="row">
+						<label class="control-label" for="upload"><h4><?php echo $this->Help; ?></h4></label>
+					</div>
+					<div class="row">
+						<div class="col-md-6">
+							<!-- Name of input element determines name in the array -->
+							
+							<input id='<?php echo $this->name; ?>_upload' class='btn btn-default' type='file' name='<?php echo $this->name; ?>'>
+						</div>
+						<div class="col-md-6">	
+							<button type='submit' class='btn btn-primary  pull-right'>Upload File</button>
+						</div>
+					</div>
+					<!--  Begin history table -->
+					<div id="BatchHistoryTable<?php echo $this->name; ?>">
+					
+					</div>
+				</div>
+				<div class='modal-footer'>
+					<button type='button' class='btn btn-default' data-dismiss='modal'>Close</button>
+					
+				</div>
+			</form>
+		</div>
+		<!-- /.modal-content -->
+	</div>
+	<!-- /.modal-dialog -->
+</div>
+<!-- /.modal -->
+<div class="modal" id="<?php echo $this->name; ?>_pleaseWaitDialog">
+	<div class='modal-dialog'>
+		<div class='modal-content'>
+			<div class="modal-header">
+				<h1>Processing...</h1>
+			</div>
+			<div class="modal-body">Depending on the size of the data this may take some time. <br /><br />Please Wait.</div>
+		</div>
+	</div>
+</div>
+
+<script>
+
+var <?php echo $this->name; ?>_timer;
+
+function <?php echo $this->name; ?>_doPoll(){
+
+		// Parameters for AJAX partial call
+        var parameters = '';
+        parameters += "?excel_mgr_ajax=true";  // required for all AJAX calls in ExcelMgr.
+        parameters += "&control_name=<?php echo $this->name; ?>";
+        parameters += "&procedure=load_history";
+        parameters += "&project_id=<?php echo $this->project_id; ?>";
+        parameters += "&table_name=<?php echo $this->table_name; ?>";
+        
+    	$( "#BatchHistoryTable<?php echo $this->name; ?>" )
+    		.load( window.location.pathname + parameters );
+    	<?php echo $this->name; ?>_timer = setTimeout(<?php echo $this->name; ?>_doPoll,5000);
+
+}
+
+// start polling the batch history when the modal is shown
+$('#<?php echo $this->name; ?>_upload_modal').on('show.bs.modal', function () {
+	<?php echo $this->name; ?>_doPoll();
+})
+	
+// stop polling the batch history when the modal is hidden
+$('#<?php echo $this->name; ?>_upload_modal').on('hidden.bs.modal', function () {
+	clearTimeout(<?php echo $this->name; ?>_timer);
+    return false;
+})
+
+</script>
+<!-- END ExcelMgr <?php echo $this->name; ?> Upload Modal -->
