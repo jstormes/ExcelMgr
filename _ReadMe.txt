@@ -94,6 +94,10 @@ http://stephen.rees-carter.net/2012/03/automatic-javascript-minification-in-zend
 
 Tables:
 
+
+--
+-- Table structure for table `excel_mgr_batch`
+--
 DROP TABLE IF EXISTS `excel_mgr_batch`;
 CREATE TABLE IF NOT EXISTS `excel_mgr_batch` (
   `excel_mgr_batch_id` bigint(20) NOT NULL AUTO_INCREMENT,
@@ -111,9 +115,14 @@ CREATE TABLE IF NOT EXISTS `excel_mgr_batch` (
   `updt_dtm` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `deleted` tinyint(1) NOT NULL,
   PRIMARY KEY (`excel_mgr_batch_id`)
-) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci AUTO_INCREMENT=7 ;
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci AUTO_INCREMENT=1 ;
+
+-- --------------------------------------------------------
 
 
+--
+-- Table structure for table `excel_mgr_log`
+--
 DROP TABLE IF EXISTS `excel_mgr_log`;
 CREATE TABLE IF NOT EXISTS `excel_mgr_log` (
   `excel_mgr_log_id` bigint(20) NOT NULL AUTO_INCREMENT,
@@ -126,7 +135,6 @@ CREATE TABLE IF NOT EXISTS `excel_mgr_log` (
   KEY `excel_mgr_batch_id_2` (`excel_mgr_batch_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci AUTO_INCREMENT=1 ;
 
-
-
+-- --------------------------------------------------------
 
 
