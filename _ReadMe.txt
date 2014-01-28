@@ -11,7 +11,8 @@ http://stackoverflow.com/questions/45953/php-execute-a-background-process
 
 REQUIRED INI SETTINGS:
 ======================
-
+php_interpreter = "php"
+autoloaderNamespaces[] = "ExcelMgr_"
 
 OPTIONAL INI SETTINGS:
 ======================
