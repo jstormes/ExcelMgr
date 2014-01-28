@@ -136,6 +136,13 @@ class ExcelMgr_View_ImportExcel
 					&& ($_POST['table_name']==$this->table_name)
 					&& ($_POST['control_name']==$this->name)
 				) {
+					if (isset($_POST['batch_id'])) {
+						if ($_POST['batch_id']!=0) {
+							$this->LogModal();
+							return;
+						}
+					}
+						
 					if (isset($_POST['form_name']))
 						if ($_POST['form_name']=='upload') {
 							if ($this->ProcessFile()) {
@@ -332,6 +339,26 @@ class ExcelMgr_View_ImportExcel
 		$this->layout->modals .= $modalView->render('load.phtml');
 
 	
+	}
+	
+	public function LogModal() {
+		
+		/* Create modal by using the Zend_View similar to using the
+		 * view from the controller.
+		*/
+		$modalView = new Zend_View();
+		$modalView->setScriptPath( dirname(__file__) . '/modals/' );
+		
+		$batch_id = $_POST['batch_id'];
+		
+		$Batch = new ExcelMgr_Models_ExcelMgrBatch();
+		
+		$record=$Batch->find($batch_id)->current();
+		
+		$modalView->record=$record;
+		
+		$this->layout->modals .= $modalView->render('log.phtml');
+		
 	}
 	
 	/***********************************************************************

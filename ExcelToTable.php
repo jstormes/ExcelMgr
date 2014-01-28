@@ -7,6 +7,9 @@ class ExcelMgr_ExcelToTable
 	/** @var Zend_Db_Table */
 	public $Batch_Row;
 	
+	/** @var Zend_Db_Table */
+	public $destTable;
+	
 	
 	public function __construct($batch_id) {
 		ini_set('memory_limit', '2G');
@@ -38,35 +41,19 @@ class ExcelMgr_ExcelToTable
 	function load() {
 		
 		$start_time = time();
-		//$this->log->info("Starting Load Batch ".$this->batch_id.".");
 		
 		$LogTable = new ExcelMgr_Models_ExcelMgrLog();
 		
-		// Begin Transaction
-		//$this->destTable->getAdapter()->beginTransaction();
 		$dbAdapter = Zend_Db_Table::getDefaultAdapter();
 		
 		$this->destTable = new Zend_Db_Table($this->table_name);
 		
 		$metadata = $this->destTable->info('metadata');
 		
-		//$this->log->debug($this->tmp_name);
-		
-		//  $inputFileType = 'Excel5';
-		//$inputFileType = 'Excel2007';
-		//	$inputFileType = 'Excel2003XML';
-		//	$inputFileType = 'OOCalc';
-		//	$inputFileType = 'Gnumeric';
-		
-		/* Create our Excel reader */
-		//$objReader = PHPExcel_IOFactory::createReader($inputFileType);
-		//$worksheetNames = $objReader->listWorksheetNames($this->tmp_name);
-		//$worksheetInfo = $objReader->listWorksheetInfo($this->tmp_name);
 		$xlsx = new ExcelMgr_SimpleXLSX($this->tmp_name);
 		
 		$worksheetDimension = $xlsx->dimension($this->tab);
 		
-		//print_r($worksheetDimension);
 		
 		$LastColumn = $worksheetDimension[0];
 		$TotalRows	= $worksheetDimension[1];
@@ -205,7 +192,24 @@ class ExcelMgr_ExcelToTable
 		echo "start time: {$start_time}\n";
 		echo "end time: {$end_time}\n";
 		echo "run time: ".$end_time-$start_time."\n";
+		
+		$where = $this->destTable->getAdapter()->quoteInto('excel_mgr_batch_id = ?', $this->batch_id);
+		$this->destTable->update(array('deleted'=>0), $where);
+		
+		
 		return true;
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
 		
 		//$TotalRows = $worksheetInfo[$this->tab]['totalRows'];
 		//$LastColumn = $worksheetInfo[$this->tab]['lastColumnLetter'];
