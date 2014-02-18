@@ -265,7 +265,7 @@ class ExcelMgr_View_ImportExcel
 		$mapping=array();
 		if (isset($this->options['mapping'])) {
 			//$this->log->debug("Mapping found");
-			$mapping = $this->options->mapping;
+			//$mapping = $this->options['mapping'];
 			//$this->log->debug($SourceColums);
 			foreach($SourceColums as $key=>$value) {
 				if(array_key_exists ($value,$this->options['mapping'])){
