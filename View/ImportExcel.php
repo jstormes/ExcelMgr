@@ -261,11 +261,28 @@ class ExcelMgr_View_ImportExcel
 	
 		$dest_options = $this->removeHidden($dest_options, $hidden);
 	
+		//$this->log->debug($this->options);
 		$mapping=array();
-		
-		foreach($SourceColums as $key=>$value) {
-			$mapping[$key]=$this->findClosestMatchingString($value,$dest_options);
+		if (isset($this->options['mapping'])) {
+			//$this->log->debug("Mapping found");
+			$mapping = $this->options->mapping;
+			//$this->log->debug($SourceColums);
+			foreach($SourceColums as $key=>$value) {
+				if(array_key_exists ($value,$this->options['mapping'])){
+					//$this->log->debug("found");
+					$mapping[$key]=$this->options['mapping'][$value];
+				}
+				else {
+					$mapping[$key]="(ignore)";
+				}
+			}
 		}
+		else {
+			foreach($SourceColums as $key=>$value) {
+				$mapping[$key]=$this->findClosestMatchingString($value,$dest_options);
+			}
+		}
+		//$this->log->debug($mapping);
 	
 		/* Boilerplate */
 		$modalView->name  = $this->name;
