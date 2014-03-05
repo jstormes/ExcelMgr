@@ -2,118 +2,142 @@
 
 class ExcelMgr_ExcelToTable
 {
-	
-	
+
+
 	/** @var Zend_Db_Table */
 	public $Batch_Row;
-	
+
 	/** @var Zend_Db_Table */
 	public $destTable;
-	
-	
+
+
 	public function __construct($batch_id) {
 		ini_set('memory_limit', '2G');
-		
+
 		$this->log = Zend_Registry::get('log');
-		
+
 		$Batch = new ExcelMgr_Models_ExcelMgrBatch();
-		
+
 		$this->batch_id = $batch_id;
-		
+
 		$this->Batch_Row=$Batch->find($batch_id)->current();
-		
+
 		$this->file_name  = $this->Batch_Row->file_name;
 		$this->tmp_name   = $this->Batch_Row->tmp_name;
 		$this->tab        = $this->Batch_Row->tab;
 		$this->table_name = $this->Batch_Row->table_name;
 		$this->project_id = $this->Batch_Row->project_id;
 		$this->first_row_names = $this->Batch_Row->first_row_names;
-		
+
 		$this->map        = json_decode($this->Batch_Row->map,true);
-		
+
 		//$this->log->debug($this->batch_id);
 		//$this->log->debug($this->Batch_Row);
 		//print_r($this->map);
-		
+
 	}
-	
-	
+
+
 	function load() {
-		
-		$start_time = time();
-		
+
+		$start_time = microtime(true);
+
 		$LogTable = new ExcelMgr_Models_ExcelMgrLog();
-		
+
 		$dbAdapter = Zend_Db_Table::getDefaultAdapter();
-		
+
 		$this->destTable = new Zend_Db_Table($this->table_name);
-		
+
 		$metadata = $this->destTable->info('metadata');
-		
+
 		$xlsx = new ExcelMgr_SimpleXLSX($this->tmp_name);
-		
+
 		$worksheetDimension = $xlsx->dimension($this->tab);
-		
-		
+
+
 		$LastColumn = $worksheetDimension[0];
 		$TotalRows	= $worksheetDimension[1];
-		
-		
+
+
 		echo "Total Rows ".$TotalRows."\n";
 		$error_cnt=0;
 		$map=$this->map;
-		
-		$map2=array();
+
+		$map2 = array();
+		$map_options = array();
+		// adding this so it's easier to have more 'ignore' cases later
+		$ignore = false;
 		foreach($map as $k=>$v) {
-			if ($v!='ignore')
-				$map2[$k]=$v;
+
+			if ($v['coltxt'] == 'ignore')
+				$ignore = true;
+
+			if(!$ignore) {
+				$map2[$k] = $v['coltxt'];
+				$map_options[$v['coltxt']] = $v['options'];
+			}
 		}
-		
+
 		$map=$map2;
 		$map[] = "project_id";
 		$map[] = "excel_mgr_batch_id";
 		$map[] = "deleted";
-		
+
 		//$str_columns = implode(",",$map);
-		
+
 		$str_columns = " (`".implode("`, `", $map)."`)";
-		
-		
-		
+
+
+
 		$tmp_str = array();
 		foreach ($map as $m)
 			$tmp_str[]="?";
-		
+
 		$pos_str = implode(",",$tmp_str);
-		
+
 		$sql = "INSERT INTO {$this->table_name} {$str_columns}
 				VALUES ({$pos_str})";
-		
+
 		echo "\n";
 		print_r($map);
 		echo "\n";
 		print_r($sql);
 		echo "\n";
-		
-			
+
+
 		$stmt = $dbAdapter->prepare($sql);
-		
+
 		$ws=$xlsx->worksheet( $this->tab );
 		list($cols,) = $xlsx->dimension( $this->tab );
-		
+
 		$backgound_columns = array();
 		$backgound_columns[] = 'project_id';
 		$backgound_columns[] = 'excel_mgr_batch_id';
 		$backgound_columns[] = 'deleted';
-		
+
 		for($i=1;$i<$TotalRows;$i++) {
 			$row = $xlsx->row($i,$ws,$cols);
-			
+
 			$new_row = array();
 			foreach($map as $k=>$v) {
-			
+
+				$commit = true;
+
 				if (!in_array($v,$backgound_columns)) {
-				
+
+					// var_dump($map_options);
+					// var_dump($k); exit;
+
+					foreach ($map_options[$v] as $option_name => $option_value) {
+						if ($option_name == 'ignore_blank' && $option_value == true || $option_value == 1) {
+							if (is_null($row[$k]) || $row[$k] == "") {
+								// $error_cnt++;
+								$commit = false;
+								echo "Ignoring row {$i} because we're ignoring blank values on column {$v}.\n";
+							}
+						}
+					}
+
 					if ($metadata[$map[$k]]['DATA_TYPE']=='date')
 						$new_row[]=date('c',($row[$k] - 25569) * 86400);
 					else {
@@ -128,7 +152,7 @@ class ExcelMgr_ExcelToTable
 							case "int":
 								if (is_numeric($row[$k]))
 									$new_row[]=(int)$row[$k];
-								else 
+								else
 									$new_row[]=null;
 								break;
 							case "varchar":
@@ -136,17 +160,17 @@ class ExcelMgr_ExcelToTable
 								$new_row[]=(string)$row[$k];
 								break;
 						}
-						
+
 					}
 				}
 			}
-			
+
 			$row=$new_row;
 			$row[]=$this->project_id;
 			$row[]=$this->batch_id;
 			$row[]=1;
-			
-			
+
+
 			if ($error_cnt>20)
 				break;
 
@@ -156,12 +180,13 @@ class ExcelMgr_ExcelToTable
 				//unset($xlsx);
 				//gc_collect_cycles();
 				//$xlsx = new ExcelMgr_SimpleXLSX($this->tmp_name);
-				
+
 			}
-			
+
 			try {
-				$stmt->execute($row);	
-				
+				if($commit)
+					$stmt->execute($row);
+
 			}
 			catch (Exception $Ex) {
 				// Catch errors
@@ -256,11 +281,11 @@ class ExcelMgr_ExcelToTable
 					//$blockEnd = ($blockStart+$BlockSize)-1;
 				}
 			}
-			
-				
-			
+
+
+
 			if ($blockEnd>$TotalRows)
-				$blockEnd=$TotalRows+1;  
+				$blockEnd=$TotalRows+1;
 			$chunkFilter->setRows($blockStart,$blockEnd-$blockStart);
 			$objPHPExcel = $objReader->load($this->tmp_name);
 			//$blockEnd2 = $blockEnd-1;
@@ -274,17 +299,17 @@ class ExcelMgr_ExcelToTable
 			echo "Load Excel Rows $blockStart to $blockEnd\n";
 			//echo "{$blockStart}/{$TotalRows}\n";
 			//sleep(1);
-			
-			
+
+
 			array_pop($sheetData);
-			
+
 			foreach($sheetData as $Row=>$Columns){
 				//echo "row $Row\n";
 				$NewRow=$this->destTable->createRow();
-				
+
 				if ($error_cnt>20)
 					break;
-				
+
 				//print_r($Columns);
 				foreach($Columns as $SourceColumnName=>$Value) {
 					if (isset($map[$SourceColumnName])) {
@@ -297,7 +322,7 @@ class ExcelMgr_ExcelToTable
 								case 'bigint':
 									if (is_numeric($Value))
 										$NewRow->{$map[$SourceColumnName]}=$Value;
-									else 
+									else
 										$NewRow->{$map[$SourceColumnName]}=null;
 									break;
 								default:
@@ -311,13 +336,13 @@ class ExcelMgr_ExcelToTable
 // 								$NewRow->{$map[$SourceColumnName]}=$Value;
 // 								if ($map[$SourceColumnName]=='descrepancy_txt') {
 // 									$NewRow->descrepancy_txt="$Value";
-// 								}	
+// 								}
 // 							}
-					
+
 						}
 					}
 				}
-				
+
 				try {
 					// Attempt insert
 					//$this->log->info("Writing Row");
@@ -326,10 +351,10 @@ class ExcelMgr_ExcelToTable
 					$NewRow->deleted=1;
 					//print_r($NewRow->toArray());
 					$id=$NewRow->save();
-					
-					
+
+
 					//$this->log->info("Row $id written.");
-					
+
 				}
 				catch (Exception $Ex) {
 					// Catch errors
@@ -342,14 +367,14 @@ class ExcelMgr_ExcelToTable
 				}
 				unset($NewRow);
 				gc_collect_cycles();
-				
+
 			}
 			//echo "********************\n";
 			$objPHPExcel->disconnectWorksheets();
 			unset($objPHPExcel);
 			unset($sheetData);
 		}
-		
+
 		if ($error_cnt!=0) {
 			// Delete this batch from the table.
 			$where = $this->destTable->getAdapter()->quoteInto('excel_mgr_batch_id = ?', $this->batch_id);
@@ -358,17 +383,17 @@ class ExcelMgr_ExcelToTable
 		}
 		return true;
 	}
-	
-	
+
+
 	public function log() {
-		
+
 		$LogTable = new ExcelMgr_Models_ExcelMgrLog();
-		
+
 		$sel = $LogTable->select();
 		$sel->where("excel_mgr_batch_id = ?", $this->batch_id);
-		
+
 		print_r($LogTable->fetchAll($sel)->toArray(),true);
-		
+
 	}
-	
+
 }
