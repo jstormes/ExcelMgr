@@ -176,65 +176,73 @@ class ExcelMgr_ExcelToTable
 			unset($row);
 			unset($new_row);
 			//gc_collect_cycles();
-			
+
 		}
-		
-		
+
+
 		if ($error_cnt!=0) {
 			// Delete this batch from the table.
 			$where = $this->destTable->getAdapter()->quoteInto('excel_mgr_batch_id = ?', $this->batch_id);
 			$this->destTable->delete($where);
 			return false;
 		}
-		
-		$end_time = time();
-		
+
+		$end_time = microtime(true);
+
+		$run_time = $end_time-$start_time;
+
+		$hours = floor($run_time / 3600);
+		$mins = floor(($run_time - ($hours*3600)) / 60);
+		$secs = floor($run_time % 60);
+		$remainder = round(fmod($run_time,60), 4);
+		$secs = $secs + $remainder;
+
 		echo "start time: {$start_time}\n";
 		echo "end time: {$end_time}\n";
-		echo "run time: ".$end_time-$start_time."\n";
-		
+		echo "run time: ".$hours."h ".$mins."m ".$secs."s\n";
+
 		$where = $this->destTable->getAdapter()->quoteInto('excel_mgr_batch_id = ?', $this->batch_id);
 		$this->destTable->update(array('deleted'=>0), $where);
-		
-		
+
+
 		return true;
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
+
+
+
+
+
+
+
+
+
+
+
+
+
 		//$TotalRows = $worksheetInfo[$this->tab]['totalRows'];
 		//$LastColumn = $worksheetInfo[$this->tab]['lastColumnLetter'];
-		
+
 		//$objReader->setLoadSheetsOnly($worksheetNames[$this->tab]);
 		//$objReader->setReadDataOnly(true); /* this */
-		
+
 		/**  Create a new Instance of our Read Filter  **/
 		//$chunkFilter = new ExcelMgr_chunkReadFilter();
 		/**  Tell the Reader that we want to use the Read Filter  **/
 		//$objReader->setReadFilter($chunkFilter);
-		
+
 		//$BlockSize=250;
-		
+
 		$map=$this->map;
-		
-		
+
+
 		echo "Ttoal Rows ".$TotalRows."\n";
 		echo "Block Size ".$BlockSize."\n";
-		
+
 		$BlockCount = round($TotalRows/$BlockSize+0.5);
 		echo "Block count ". $BlockCount . "\n";
 		$error_cnt = 0;
 		for($i=0;$i<=$BlockCount;$i++) {
-			
+
 			$rows = 10;
 			$blockStart = $BlockSize*$i;
 			$blockEnd = ($blockStart+$BlockSize);
