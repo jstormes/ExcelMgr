@@ -125,9 +125,8 @@ class ExcelMgr_ExcelToTable
 
 				if (!in_array($v,$backgound_columns)) {
 
-					// var_dump($map_options);
-					// var_dump($k); exit;
-
+					// check all of our options for each column
+					// should be able to easily add more logic for other options
 					foreach ($map_options[$v] as $option_name => $option_value) {
 						if ($option_name == 'ignore_blank' && $option_value == true || $option_value == 1) {
 							if (is_null($row[$k]) || $row[$k] == "") {

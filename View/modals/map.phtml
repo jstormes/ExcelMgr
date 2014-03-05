@@ -94,8 +94,11 @@
 
 								</div>
 								<div class="col-sm-4">
-									<?php echo $this->formCheckbox("mapping[$idx][options][ignore_blank]");
+									<?php
+										// adding an 'options' key to the mapping array
+										// can add more keys to add more options
 									?>
+									<?php echo $this->formCheckbox("mapping[$idx][options][ignore_blank]"); ?>
 								</div>
 
 							</div>
