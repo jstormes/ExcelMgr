@@ -6,6 +6,57 @@ This library spawns a long running task that forks multiple loaders. The idea is
 
 http://stackoverflow.com/questions/45953/php-execute-a-background-process
 
+##Application.ini
+
+Add this to the application.ini
+
+    ;-
+    ;- Add the ExcelMgr library to the name space.
+    ;-
+    autoloaderNamespaces[] = "ExcelMgr_"
+
+##Controller
+
+The controller needs code similar to this to create the upload button
+
+![Upload Button](readme_files/upload_button.png)
+
+    $importStage = new Application_Model_DbTable_ImportStage();
+    $this->project_id = 0;
+    $tableMap = null;
+
+    $ImportFile = new ExcelMgr_View_ImportExcel("ACUpload", $importStage, $this->project_id,
+                    array("HTML"=>"<button class=\"btn btn-default\"><span class=\"fa fa-upload\"></span> Upload Aircraft Data</button>",
+                    "Help"=>"Select Excel file to upload."
+                    ,"mapping"=>$tableMap
+                ));
+    $this->view->aircraft_upload = $ImportFile->Button();
+
+When `null` is passed to `$tableMap` the ExcelMgr will create the data mapping array on the fly. To force a map you can pass an array similar to this
+
+    $tableMap = array(
+            "A/C"                     => "aircraft_num_txt",
+            "Delta num"               => "delta_item_num",
+            "Open Date"               => "open_dt",
+            "Rep"                     => "rep_txt",
+            "Section"                 => "section_txt",
+            "Description and/or PN"   => "prr_desc",
+            "Serial Number"           => "serial_num_txt",
+            "Query / Issue / Comment" => "query_txt",
+            "Response"                => "response_txt",
+            "SWA Priority"            => "swa_priority",
+            "Response Date"          => "response_dt",
+            "Response by"             => "response_by",
+            "Status"                  => "source_status",
+            "Closed Date"             => "source_closed_dt"
+        );
+
+##View
+
+To present the upload button, put this in the view file
+
+    <?= $this->aircraft_upload; ?>
+
 ##Paths
 
     /ExcelMgr/View/Modals/...  
