@@ -1,26 +1,22 @@
-fa Modal <?php echo $this->name; ?> Column Mapping -->
 <style>
-#<?php echo $this->name; ?>_map .modal-dialog {
+#testmod .modal-dialog {
     width: 95%; /* your width */
 }
 
 @media ( max-width : 991px) {
-    #<?php echo $this->name; ?>_map .modal-dialog {
+    #testmod .modal-dialog {
         width: 99%; /* your width */
     }
 }
 </style>
 
-<div class='modal' id='<?php echo $this->name; ?>_map' tabindex='-1' role='dialog'
+<!-- Modal Column Matching -->
+<div class='modal' id='testmod' tabindex='-1' role='dialog'
     aria-labelledby='myModalLabel' aria-hidden='true'>
     <div class='modal-dialog'>
         <div class='modal-content'>
-            <form method='post' name="map" enctype='multipart/form-data'
-            onsubmit='return <?php echo $this->name; ?>_map_on_submit()'>
-                <input type="hidden" name="control_name" value="<?php echo $this->name; ?>"></input>
-                <input type="hidden" name="project_id" value="<?php echo $this->project_id; ?>"></input>
-                <input type="hidden" name="table_name" value="<?php echo $this->table_name; ?>"></input>
-                <input type="hidden" name="form_name" value="map"></input>
+            <form method='post' name="testmod" enctype='multipart/form-data'
+            onsubmit='return testmod_on_submit()'>
 
                 <div class='modal-header'>
                     <button type='button' class='close' data-dismiss='modal'
@@ -30,12 +26,9 @@ fa Modal <?php echo $this->name; ?> Column Mapping -->
 
                 <div class='modal-body'>
 
-
                     <div class="container">
-
-
                         <div class="row">
-                            <div class="col-sm-5">
+                            <div class="col-sm-4">
                                 <label class="control-label" for="tabname">Worksheet to load from.</label>
                                 <div class="controls">
                                     <input type='hidden' name='<?php echo $this->name; ?>-step1'
@@ -47,23 +40,18 @@ fa Modal <?php echo $this->name; ?> Column Mapping -->
                             </div>
                         </div>
 
-                        <div class="row">
-                            <div class="form-group col-sm-4">
+                        <div class="form-group col-sm-12">
+                            <div class="row">
                                 <div class="controls">
                                     <label for="rename"> 
                                     <?php echo $this->formCheckbox("firstRowNames",null,array('checked' => $this->firstRowNames,'onchange' => 'this.form.submit();')); ?>
+                                    
                                         First row contains column names.
                                     </label>
                                 </div>
                             </div>
-                            <div class="form-group">
-                                <label for="dataStartRow">Data starts at row number<input class="form-control" id="dataStartRow" name="dataStartRow" type="text" ></label>
-                                <span class="">
-                                    
-                                </span> 
-                            </div>
-                        </div>
 
+                        </div>
 
                         <div class="row">
                             <div class="col-sm-3">
@@ -78,7 +66,7 @@ fa Modal <?php echo $this->name; ?> Column Mapping -->
                             </div>
                         </div>
 
-                        <div>
+                        <div id='results'>
         
                             <?php foreach($this->source_columns as $idx=>$source_name) { ?>
                             <div class="row">
@@ -120,7 +108,7 @@ fa Modal <?php echo $this->name; ?> Column Mapping -->
 </div>
 <!-- /.modal -->
 <!-- Please Wait Dialog -->
-<div class="modal" id="<?php echo $this->name; ?>_pleaseWaitDialog" role='dialog' aria-labelledby='myModalLabel2' aria-hidden='true'>
+<div class="modal" id="pleaseWaitDialog" role='dialog' aria-labelledby='myModalLabel2' aria-hidden='true'>
     <div class='modal-dialog'>
         <div class='modal-content'>
             <div class="modal-header">
@@ -134,7 +122,7 @@ fa Modal <?php echo $this->name; ?> Column Mapping -->
 
 <script>
 
-$( document ).ready(function() {$('#<?php echo $this->name; ?>_map').modal();});
+$( document ).ready(function() {$('#testmod').modal();});
                                     
 //var SourceSchema = <?php echo $this->SourceSchema; ?>;
 //var DestSchema = <?php echo $this->DestSchema; ?>;
@@ -154,12 +142,11 @@ $( document ).ready(function() {$('#<?php echo $this->name; ?>_map').modal();});
 // }
 
 
-function <?php echo $this->name; ?>_map_on_submit() {
+function testmod_on_submit() {
     
-    $('#<?php echo $this->name; ?>_map').modal('hide');
-    $('#<?php echo $this->name; ?>_pleaseWaitDialog').modal();
+    $('#testmod').modal('hide');
+    $('#pleaseWaitDialog').modal();
       return true;
     }
 </script>
-<!-- End  Modal <?php echo $this->name; ?> Column Mapping -->
-
+<!-- End Modal Upload -->
