@@ -6,6 +6,45 @@ This library spawns a long running task that forks multiple loaders. The idea is
 
 http://stackoverflow.com/questions/45953/php-execute-a-background-process
 
+##Program Flow
+
+    view/modals/upload.phtml -- presents the dialog to select the file. Opened by clicking on the Upload button.
+    view/modals/map.phtml -- present the dialog to map input to DB columns.
+    view/modals/load.phtml -- presents status of the data load.
+    view/modals/load_history_partial.phtml -- formats the HTML table with data for load.phtml.
+    view/ImportExcel.php -- handles the load process
+
+This class is the view helper for importing xlsx files into a database.
+Currently this file uses a Zend_Db_Table_Abstract to gather meta-data about
+the target MySQL table.  In the near future it will also accept a 
+PHPSlickGrid_Db_Table that will provide enhanced functions such as column
+name alises, fields widths, etc... for now only the minimum data load function
+are implemented.
+
+The load process can be viewed as a mini MVC with this class representing 
+the controller, the bootstrap modals representing the view and the `*_Db_Table_Abstract` representing the model.
+
+The load proces is split into steps, with step 0 just presenting 
+the load HTML (Button).
+
+    Steps/Views:
+
+    0 - No load in progress, only the HTML to initiate the load is presented.
+
+    1 - Upload/History modal is presented, history is updated via AJAX partial 
+        with the current load status.
+
+    2 - Mapping, the mapping modal is presented, allowing the user to map xlsx
+        columns to the destination MySQL columns.
+
+    3 - Load status, presents the load status in a modal, this is the same load 
+        status that is presented in step 1 but without the upload option.
+
+    4 - Not a step per-say, presents the detailed log of a load in a modal 
+        window.
+    
+This class expects that the layout has a <?php echo $this->layout()->modals; ?> in the main body where all bootstrap modals can live.
+
 ##Application.ini
 
 Add this to the application.ini
@@ -21,18 +60,20 @@ The controller needs code similar to this to create the upload button
 
 ![Upload Button](readme_files/upload_button.png)
 
-    $importStage = new Application_Model_DbTable_ImportStage();
-    $this->project_id = 0;
+    $importTable = new Application_Model_DbTable_ImportStage();
+    $project_id = 0;
     $tableMap = null;
+    $name = 'ACUpload';
+    $options = array(
+        "HTML"=>"<button class=\"btn btn-default\"><span class=\"fa fa-upload\"></span> Upload Aircraft Data</button>",
+        "Help"=>"Select Excel file to upload.",
+        "mapping"=>$tableMap
+        );
 
-    $ImportFile = new ExcelMgr_View_ImportExcel("ACUpload", $importStage, $this->project_id,
-                    array("HTML"=>"<button class=\"btn btn-default\"><span class=\"fa fa-upload\"></span> Upload Aircraft Data</button>",
-                    "Help"=>"Select Excel file to upload."
-                    ,"mapping"=>$tableMap
-                ));
+    $ImportFile = new ExcelMgr_View_ImportExcel($name, $importTable, $project_id, $options);
     $this->view->aircraft_upload = $ImportFile->Button();
 
-When `null` is passed to `$tableMap` the ExcelMgr will create the data mapping array on the fly. To force a map you can pass an array similar to this
+When `null` is passed to `$tableMap` the ExcelMgr will create the data mapping array on the fly. To force a map, you can pass an array similar to this
 
     $tableMap = array(
             "A/C"                     => "aircraft_num_txt",
@@ -149,8 +190,21 @@ This is a sample of an import data table. Note that all data goes into a TEXT fi
 ##Files
 
 File storage directories are required.
-
 ***** Need details *******
+
+##Utility Function
+
+Generate an Excel column list
+        
+    $letterList = new ExcelMgr_ExcelMgrUtility();
+    $columns = $letterList->columnAlphabet(133); // pass in the number of columns
+    // Returns an array of letters. A-Z AA-AZ BA-BZ and so on.
+    // In this example A-EC
+
+
+
+
+
 
 ##Basic Load Logic
 
