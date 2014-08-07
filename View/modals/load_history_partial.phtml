@@ -1,41 +1,41 @@
-				<?php if (count($this->batch_history)>0) { ?>
-				<input type='hidden' id='batch_id' name='batch_id' value='0' />
-				<input type='hidden' id='delete_id' name='delete_id' />
-					<div class="row">&nbsp;</div>
-					<div class="row">
-						<div class="col-md-12">
-						<p class='control-label'><h4>Table Load History: </h4></p>
-						</div>
-					</div>	
-					<div class="row">				
-						<div class="col-md-12">
-							<table class="table">
-		  						<tr>
-		  							<th>Date/Time</th><th>File</th><th>Status</th>
-		  						</tr>
-		  						<?php 
-		  						$i=0;
-		  						$current_url = explode("?", $_SERVER['REQUEST_URI']);
-								$current_url = $current_url[0] ;
-		  						foreach($this->batch_history as $record) {
-		  							if ($i++>=5) break;?>
-		  						<tr>
-		  							<td><?php echo $record['updt_dtm']?></td>
-		  							<td><?php echo $record['file_name']?></td>
-		  							<td>
-		  								<?php if (file_exists($record['log_file'])) {?>
-		  									<a href="#"
-		  									onclick="$('#batch_id').val('<?php echo $record['excel_mgr_batch_id']; ?>');$(this).closest('form').submit();">
-		  										<?php echo $record['status']?>
-	  										</a>
-		  								<?php } else { ?>
-		  									<?php echo $record['status']?>
-		  								<?php }?>
-		  							</td>
-		  							
-		  						</tr>
-		  						<?php }?>
-							</table>	
-						</div>			
-					</div>
-					<?php } ?>
+<?php if (count($this->batch_history)>0) { ?>
+	<input type='hidden' id='batch_id' name='batch_id' value='0' />
+	<input type='hidden' id='delete_id' name='delete_id' />
+		<div class="row">&nbsp;</div>
+		<div class="row">
+			<div class="col-md-12">
+			<p class='control-label'><h4>Table Load History: </h4></p>
+			</div>
+		</div>	
+		<div class="row">				
+			<div class="col-md-12">
+				<table class="table">
+						<tr>
+							<th>Date/Time</th><th>File</th><th>Status</th>
+						</tr>
+						<?php 
+						$i=0;
+						$current_url = explode("?", $_SERVER['REQUEST_URI']);
+					$current_url = $current_url[0] ;
+						foreach($this->batch_history as $record) {
+							if ($i++>=5) break;?>
+						<tr>
+							<td><?php echo $record['updt_dtm']?></td>
+							<td><?php echo $record['file_name']?></td>
+							<td>
+								<?php if (file_exists($record['log_file'])) {?>
+									<a href="#"
+									onclick="$('#batch_id').val('<?php echo $record['excel_mgr_batch_id']; ?>');$(this).closest('form').submit();">
+										<?php echo $record['status']?>
+									</a>
+								<?php } else { ?>
+									<?php echo $record['status']?>
+								<?php }?>
+							</td>
+							
+						</tr>
+						<?php }?>
+				</table>	
+			</div>			
+		</div>
+<?php } ?>
