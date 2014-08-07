@@ -187,6 +187,12 @@ This is a sample of an import data table. Note that all data goes into a TEXT fi
       PRIMARY KEY (`id`)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
+##Models
+To ignore columns, add this to the model for the destination DB table
+
+    public $_hidden = array('id','updt_tm','updt_usr');
+
+
 ##Files
 
 File storage directories are required.
