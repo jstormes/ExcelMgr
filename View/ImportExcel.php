@@ -84,7 +84,7 @@ class ExcelMgr_View_ImportExcel
         $this->primary_key=$this->primary_key[1];
 
 
-        // Set hidden columns
+        // Set hidden columns -- _hidden is set in the model.
         $this->hidden = array();
         if(property_exists($destination, '_hidden')){
             $this->hidden = $destination->_hidden;
@@ -230,35 +230,30 @@ class ExcelMgr_View_ImportExcel
         $xlsx = new ExcelMgr_SimpleXLSX($this->file_meta['tmp_name']);
         $worksheetNames = $xlsx->sheetNames();
 
-        // HACK TODO: This is a list of columns to hide.
-        // These need to be set as a option and eventualy the model
-        // needs to hint these.
-        // $hidden=array();
-        // $hidden[] = "project_id";
-        // $hidden[] = "excel_mgr_batch_id";
-        // $hidden[] = "deleted";
-        // $hidden[] = "updt_usr_id";
-        // $hidden[] = "updt_dtm";
-        // $hidden[] = "crea_usr_id";
-        // $hidden[] = "crea_dtm";
-        // $hidden[] = $this->primary_key;
+        // hidden columns are set in the model and configured in init()
         $hidden = $this->hidden;
 
         /* Get our source tab and determine if first row contains column names */
         $firstRowNames = 1;
         $worksheet_idx = 1;
         $ws            = $xlsx->worksheet($worksheet_idx);
-        list($cols,)   = $xlsx->dimension($worksheet_idx);
+        
+        // get some info about the worksheet.
+        // $tableInfo[0] = columns
+        // $tableInfo[1] = rows
+        $tableInfo  = $xlsx->dimension($worksheet_idx);
 
+        $tableColumns = $xlsx->row(0, $ws, $tableInfo[0]);
+        
         if (isset($_POST['worksheet_idx'])) {
             $worksheet_idx = $_POST['worksheet_idx'];
             if (isset($_POST['firstRowNames'])) {
                 if ($_POST['firstRowNames'] == 0) {
                     $firstRowNames = 0;
-                    $SourceColums = $xlsx->row(0, $ws, $cols);
+                    $SourceColumns = $this->columnAlphabet( $tableInfo[0] );
                 }else{
                     $firstRowNames = 1;
-                    // build source columns
+                    $SourceColumns = $tableColumns;
                 }
             }
         }
@@ -270,7 +265,6 @@ class ExcelMgr_View_ImportExcel
         }
 
 
-  $this->log->debug($SourceColums);
         /**  Destination Columns  **/
         $dest_options = array();
         $dest_options['ignore'] = "(ignore)";
@@ -285,8 +279,8 @@ class ExcelMgr_View_ImportExcel
         if (isset($this->options['mapping'])) {
             //$this->log->debug("Mapping found");
             //$mapping = $this->options['mapping'];
-            // $this->log->debug($SourceColums);
-            foreach($SourceColums as $key=>$value) {
+            // $this->log->debug($SourceColumns);
+            foreach($SourceColumns as $key=>$value) {
                 if(array_key_exists ($value,$this->options['mapping'])){
                     //$this->log->debug("found");
                     $mapping[$key] = $this->options['mapping'][$value];
@@ -297,7 +291,7 @@ class ExcelMgr_View_ImportExcel
             }
         }
         else {
-            foreach($SourceColums as $key=>$value) {
+            foreach($SourceColumns as $key=>$value) {
                 // $this->log->debug($mapping[$key]);
                 $mapping[$key] = $this->findClosestMatchingString($value,$dest_options);
             }
@@ -318,7 +312,7 @@ class ExcelMgr_View_ImportExcel
         $modalView->firstRowNames  = $firstRowNames;
         $modalView->dataStartRow   = $dataStartRow;
         
-        $modalView->source_columns = $SourceColums;
+        $modalView->source_columns = $SourceColumns;
         $modalView->dest_options   = $dest_options;
         
         $modalView->mapping        = $mapping;
@@ -576,4 +570,31 @@ class ExcelMgr_View_ImportExcel
         }
         return $val;
     }
+
+    /**
+     * Return a list letters for Excel columns
+     *
+     * By: dgdavidson Aug 7, 2014
+     *
+     * @param integer $columns
+     * @return Array
+     */
+    public function columnAlphabet($columns){
+        $alphabet = Array();
+        for ($na = 0; $na < $columns; $na++) {
+            $alphabet[] = $this->generateAlphabet($na);
+        }
+        return $alphabet;
+    }
+
+    private  function generateAlphabet($na) {
+        $sa = "";
+        while ($na >= 0) {
+            $sa = chr($na % 26 + 65) . $sa;
+            $na = floor($na / 26) - 1;
+        }
+        return $sa;
+    }
+
+
 }
