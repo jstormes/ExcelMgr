@@ -231,7 +231,7 @@ class ExcelMgr_ExcelToTable
         $map=$this->map;
         
         
-        echo "Ttoal Rows ".$TotalRows."\n";
+        echo "Total Rows ".$TotalRows."\n";
         echo "Block Size ".$BlockSize."\n";
         
         $BlockCount = round($TotalRows/$BlockSize+0.5);
