@@ -69,7 +69,6 @@ class ExcelMgr_View_ImportExcel
                 'class'=>''
         );
 
-
         /* Merge our defaults with the options passed in */
         $this->options = array_merge($_defaults,$options);
 
@@ -82,7 +81,6 @@ class ExcelMgr_View_ImportExcel
         // Get the primary key, must be only one!!!
         $this->primary_key=$destination->info('primary');
         $this->primary_key=$this->primary_key[1];
-
 
         // Set hidden columns -- _hidden is set in the model.
         $this->hidden = array();
@@ -113,7 +111,7 @@ class ExcelMgr_View_ImportExcel
     }
 
     public function Controller() {
-
+        $this->log->debug("ImportExcel.php - Controller"); 
         // if AJAX parameters are present
         if (isset($_GET['excel_mgr_ajax'])
             && isset($_GET['project_id'])
@@ -186,7 +184,7 @@ class ExcelMgr_View_ImportExcel
      *
      */
     public function UploadModal() {
-
+        $this->log->debug("ImportExcel.php - UploadModal");
         /* Create modal by using the Zend_View similar to using the
          * view from the controller.
         */
@@ -209,6 +207,13 @@ class ExcelMgr_View_ImportExcel
         $modalView->project_id = $this->project_id;
         $modalView->table_name = $this->table_name;
 
+        // if callback then pass it on
+        if( isset($_POST['callback'] )){        
+            $modalView->callback = $_POST['callback'];
+        }else{
+            $modalView->callback = '';
+        }
+
         /**  Show history for this table's loads  **/
         $Batch = new ExcelMgr_Models_ExcelMgrBatch();  // Model for load history.
         $sel = $Batch->select();
@@ -221,6 +226,8 @@ class ExcelMgr_View_ImportExcel
     }
 
     public function MapModal() {
+        $this->log->debug("ImportExcel.php - MapModal");  
+        $this->log->debug( $_POST['worksheet_idx'] );  
 
         /* Create modal by using the Zend_View similar to using the
          * view from the controller.  */
@@ -233,37 +240,51 @@ class ExcelMgr_View_ImportExcel
         // hidden columns are set in the model and configured in init()
         $hidden = $this->hidden;
 
-        /* Get our source tab and determine if first row contains column names */
-        $firstRowNames = 1;
-        $worksheet_idx = 1;
-        $ws            = $xlsx->worksheet($worksheet_idx);
-        
-        // get some info about the worksheet.
-        // $tableInfo[0] = columns
-        // $tableInfo[1] = rows
-        $tableInfo  = $xlsx->dimension($worksheet_idx);
-
-        $tableColumns = $xlsx->row(0, $ws, $tableInfo[0]);
-        
-        if (isset($_POST['worksheet_idx'])) {
+        // Get the worksheet to map
+        if (isset($_POST['worksheet_idx'])){
             $worksheet_idx = $_POST['worksheet_idx'];
-            if (isset($_POST['firstRowNames'])) {
-                if ($_POST['firstRowNames'] == 0) {
-                    $firstRowNames = 0;
-                    $SourceColumns = $this->columnAlphabet( $tableInfo[0] );
-                }else{
-                    $firstRowNames = 1;
-                    $SourceColumns = $tableColumns;
-                }
-            }
+        }else{
+            $worksheet_idx = 1;
         }
-        
+
+        // Get the row where the data starts
         if (isset($_POST['dataStartRow'])){
             $dataStartRow = $_POST['dataStartRow'];
         }else{
             $dataStartRow = 0;
         }
 
+        // Does the first row have the column names
+        if (isset($_POST['firstRowNames'])) {
+            if ($_POST['firstRowNames'] == 0) {
+                $firstRowNames = 0;
+            }else{
+                $firstRowNames = 1;
+            }
+        }
+
+        /* Get our source tab and determine if first row contains column names */
+        // $firstRowNames = 1;
+        $ws = $xlsx->worksheet($worksheet_idx);
+        
+        // get some info about the worksheet.
+        // $tableInfo[0] = columns
+        // $tableInfo[1] = rows
+        $tableInfo = $xlsx->dimension($worksheet_idx);
+
+        if ($firstRowNames == 0) {      
+            $SourceColumns = $this->columnAlphabet( $tableInfo[0] );
+        }else{
+            $SourceColumns = $xlsx->row(0, $ws, $tableInfo[0]);
+        }
+              
+        $this->log->debug($ws);        
+        $this->log->debug($worksheet_idx);        
+        $this->log->debug($tableInfo);        
+        $this->log->debug($tableInfo[0]);        
+        $this->log->debug($tableInfo[1]);        
+        $this->log->debug($firstRowNames);        
+        $this->log->debug($SourceColumns);        
 
         /**  Destination Columns  **/
         $dest_options = array();
@@ -316,15 +337,20 @@ class ExcelMgr_View_ImportExcel
         $modalView->dest_options   = $dest_options;
         
         $modalView->mapping        = $mapping;
-
+        
+        // if callback then pass it on
+        if( isset($_POST['callback'] )){        
+            $modalView->callback = $_POST['callback'];
+        }else{
+            $modalView->callback = '';
+        }
+        
         /* Place our modal in with the other modals on current page */
         $this->layout->modals .= $modalView->render('map.phtml');
-
     }
 
-
     public function LoadModal() {
-
+        $this->log->debug("ImportExcel.php - LoadModal"); 
         /* Create modal by using the Zend_View similar to using the
          * view from the controller. */
         $modalView = new Zend_View();
@@ -332,8 +358,8 @@ class ExcelMgr_View_ImportExcel
 
         $Batch = new ExcelMgr_Models_ExcelMgrBatch();
 
-        $Batch_Row = $Batch->createRow();
-
+        $Batch_Row                  = $Batch->createRow();
+        
         $Batch_Row->project_id      = $this->project_id;
         $Batch_Row->file_name       = $this->file_meta['name'];
         $Batch_Row->tmp_name        = $this->file_meta['tmp_name'];
@@ -343,10 +369,17 @@ class ExcelMgr_View_ImportExcel
         $Batch_Row->log_file        = tempnam ( sys_get_temp_dir() , "PHPlog" );
         $Batch_Row->first_row_names = $_POST['firstRowNames'];
         $Batch_Row->data_start_row  = $_POST['dataStartRow'];
+        
+        $Batch_Row->callback        = $_POST['callback'];        
+        
+        $Batch_id                   = $Batch_Row->save();
 
-        $Batch_id=$Batch_Row->save();
+        if(property_exists($this->destTable, '_truncate')){
+           if($this->destTable->_truncate){
+               $this->destTable->getAdapter()->query('TRUNCATE TABLE '.$this->destTable->info(Zend_Db_Table::NAME));
+           }
+        }
 
-        $this->log->debug("Before run");        
         $this->run( dirname(__file__) . "/../Scripts/ExcelToTable.php ".$Batch_id, $Batch_Row->log_file);
 
         $this->log->debug("After Run");
@@ -373,7 +406,7 @@ class ExcelMgr_View_ImportExcel
     }
 
     public function LogModal() {
-
+        $this->log->debug("ImportExcel.php - LogModal"); 
         /* Create modal by using the Zend_View similar to using the
          * view from the controller.
         */
@@ -389,7 +422,6 @@ class ExcelMgr_View_ImportExcel
         $modalView->record=$record;
 
         $this->layout->modals .= $modalView->render('log.phtml');
-
     }
 
     /***********************************************************************
@@ -397,7 +429,7 @@ class ExcelMgr_View_ImportExcel
      **********************************************************************/
 
     public function load_history() {
-
+        $this->log->debug("ImportExcel.php - load_history"); 
         $this->layout->disableLayout();
 
         $modalView = new Zend_View();
@@ -429,11 +461,6 @@ class ExcelMgr_View_ImportExcel
 
         exit();
     }
-
-
-
-
-
 
     /***********************************************************************
      * Support methods
@@ -595,6 +622,4 @@ class ExcelMgr_View_ImportExcel
         }
         return $sa;
     }
-
-
 }

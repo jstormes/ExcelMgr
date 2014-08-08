@@ -70,13 +70,29 @@ try {
 	$Batch_Row->save();
 	
 	$Loader = new ExcelMgr_ExcelToTable($batch_id);
-	if ($Loader->load())
+	if ($Loader->load()){
 		$Batch_Row->status="Done";
-	else 
+
+		//**** Call back function ****/
+		// Added because we don't have events in ZF1
+		// 
+		if(!is_null( $Batch_Row->callback )){
+			echo "\nCall Back: ".$Batch_Row->callback."\n";
+			if(class_exists($Batch_Row->callback)){
+				echo "\nCall Back ClassExists\n";
+				$callback = new $Batch_Row->callback;
+				$callback->init($Batch_Row);
+			}else{
+				echo "\nCould not find Call Back Class\n";
+			}
+		}
+
+	}else 
 		$Batch_Row->status="Crash";
 	
 	$Batch_Row->pid = null;
 	$Batch_Row->save();
+
 	echo "\nDone\n";
 }
 catch (Exception $Ex) {

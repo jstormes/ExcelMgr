@@ -15,12 +15,17 @@ fa Modal <?php echo $this->name; ?> Column Mapping -->
     aria-labelledby='myModalLabel' aria-hidden='true'>
     <div class='modal-dialog'>
         <div class='modal-content'>
-            <form method='post' name="map" enctype='multipart/form-data'
+            <form 
+            method='post' 
+            name="map" 
+            enctype='multipart/form-data'
             onsubmit='return <?php echo $this->name; ?>_map_on_submit()'>
                 <input type="hidden" name="control_name" value="<?php echo $this->name; ?>"></input>
                 <input type="hidden" name="project_id" value="<?php echo $this->project_id; ?>"></input>
                 <input type="hidden" name="table_name" value="<?php echo $this->table_name; ?>"></input>
+                <input type="hidden" name="callback" value="<?php echo $this->callback; ?>"></input>
                 <input type="hidden" name="form_name" value="map"></input>
+
 
                 <div class='modal-header'>
                     <button type='button' class='close' data-dismiss='modal'
@@ -30,9 +35,7 @@ fa Modal <?php echo $this->name; ?> Column Mapping -->
 
                 <div class='modal-body'>
 
-
                     <div class="container">
-
 
                         <div class="row">
                             <div class="col-sm-5">
@@ -64,7 +67,6 @@ fa Modal <?php echo $this->name; ?> Column Mapping -->
                             </div>
                         </div>
 
-
                         <div class="row">
                             <div class="col-sm-3">
                                 <h4>Source Column</h4>
@@ -78,8 +80,7 @@ fa Modal <?php echo $this->name; ?> Column Mapping -->
                             </div>
                         </div>
 
-                        <div>
-        
+                        <div>        
                             <?php foreach($this->source_columns as $idx=>$source_name) { ?>
                             <div class="row">
                                 <div class="col-sm-3">
@@ -89,15 +90,12 @@ fa Modal <?php echo $this->name; ?> Column Mapping -->
                                     <h4><i class="fa fa-long-arrow-right"></i></h4>
                                 </div>
                                 <div class="col-sm-2">
-                                
                                     <?php echo $this->formSelect(
                                             "mapping[$idx]",
                                             $this->mapping[$idx],
                                             array('class'=>'form-control'),
                                             $this->dest_options);?>
-
                                 </div>
-                                
                             </div>
                             <?php } ?>  
                             
@@ -133,33 +131,34 @@ fa Modal <?php echo $this->name; ?> Column Mapping -->
 <!-- /Please Wait Dialog -->
 
 <script>
-
-$( document ).ready(function() {$('#<?php echo $this->name; ?>_map').modal();});
-                                    
-//var SourceSchema = <?php echo $this->SourceSchema; ?>;
-//var DestSchema = <?php echo $this->DestSchema; ?>;
-
-// function updateStatus(source_column,dest_column) {
-//  var msg = '';
-
-//  if (dest_column!='ignore') {
-//      if (DestSchema[dest_column].DATA_TYPE!='text')
-//          if (DestSchema[dest_column].LENGTH<SourceSchema[source_column].LENGTH)
-//              msg += "Destination column is too short.  Column data will be truncated.";
-    
-//      if (DestSchema[dest_column].DATA_TYPE!=SourceSchema[source_column].DATA_TYPE)
-//          msg += " Column types don't match.";
-//  }
-//  document.getElementById(source_column).innerHTML=msg;
-// }
+    $( document ).ready(function() {
+        $('#<?php echo $this->name; ?>_map').modal();
 
 
-function <?php echo $this->name; ?>_map_on_submit() {
-    
-    $('#<?php echo $this->name; ?>_map').modal('hide');
-    $('#<?php echo $this->name; ?>_pleaseWaitDialog').modal();
-      return true;
-    }
+
+    });
+                                        
+    //var SourceSchema = <?php echo $this->SourceSchema; ?>;
+    //var DestSchema = <?php echo $this->DestSchema; ?>;
+
+    // function updateStatus(source_column,dest_column) {
+    //  var msg = '';
+
+    //  if (dest_column!='ignore') {
+    //      if (DestSchema[dest_column].DATA_TYPE!='text')
+    //          if (DestSchema[dest_column].LENGTH<SourceSchema[source_column].LENGTH)
+    //              msg += "Destination column is too short.  Column data will be truncated.";
+        
+    //      if (DestSchema[dest_column].DATA_TYPE!=SourceSchema[source_column].DATA_TYPE)
+    //          msg += " Column types don't match.";
+    //  }
+    //  document.getElementById(source_column).innerHTML=msg;
+    // }
+
+        function <?php echo $this->name; ?>_map_on_submit() {
+            $('#<?php echo $this->name; ?>_map').modal('hide');
+            $('#<?php echo $this->name; ?>_pleaseWaitDialog').modal();
+            return true;
+        }
 </script>
 <!-- End  Modal <?php echo $this->name; ?> Column Mapping -->
-

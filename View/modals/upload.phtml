@@ -23,6 +23,7 @@
 				<input type="hidden" name="project_id" value="<?php echo $this->project_id; ?>"></input>
 				<input type="hidden" name="table_name" value="<?php echo $this->table_name; ?>"></input>
 				<input type="hidden" name="form_name" value="upload"></input>
+                <input type="hidden" id="callback" name="callback" value="<?php echo $this->callback; ?>"></input>
 				<div class='modal-header'>
 					<button type='button' class='close' data-dismiss='modal'
 						aria-hidden='true'>&times;</button>
@@ -93,6 +94,10 @@ function <?php echo $this->name; ?>_doPoll(){
 
 // start polling the batch history when the modal is shown
 $('#<?php echo $this->name; ?>_upload_modal').on('show.bs.modal', function () {
+
+	// **** added to pass a callback function into the class until we can use ZF events
+    $('#callback').val( getCookie('callback') );
+
 	<?php echo $this->name; ?>_doPoll();
 })
 	
