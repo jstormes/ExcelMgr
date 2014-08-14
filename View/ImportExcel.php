@@ -63,10 +63,15 @@ class ExcelMgr_View_ImportExcel
 
         /* Set our defaults */
         $_defaults = array(
-                'HTML'=>'Upload',
-                'Title'=>'Load Table',
-                'Help'=>'Select file to upload:',
-                'class'=>''
+                // 'HTML'    =>'Upload',
+                'Title'   =>'Load Table',
+                'Help'    =>'Select file to upload:',
+                'btn_id'  =>'uploadButton',
+                'btn_class'  => 'btn btn-primary',
+                'btn_icon' => 'fa fa-upload',
+                'btn_text' => 'Upload Excel File',
+                'class'   =>null,
+                'preload' =>null
         );
 
         /* Merge our defaults with the options passed in */
@@ -76,11 +81,11 @@ class ExcelMgr_View_ImportExcel
         $this->table_name = $this->destTable->info('name');
 
         // Get the meta data from the model
-        $this->dest_meta=$destination->info('metadata');
+        $this->dest_meta = $destination->info('metadata');
 
         // Get the primary key, must be only one!!!
-        $this->primary_key=$destination->info('primary');
-        $this->primary_key=$this->primary_key[1];
+        $this->primary_key = $destination->info('primary');
+        $this->primary_key = $this->primary_key[1];
 
         // Set hidden columns -- _hidden is set in the model.
         $this->hidden = array();
@@ -102,16 +107,31 @@ class ExcelMgr_View_ImportExcel
     public function Button() {
         /* Copy varables for template */
         $name  = $this->name;               // Control name
-        $Title = $this->options['Title'];   // title for on hover event
-        $HTML  = $this->options['HTML'];    // HTML of the button/link
-        $class = $this->options['class'];   // CSS class of the button/link
+        $Title   = $this->options['Title'];   // title for on hover event
+        // $HTML    = $this->options['HTML'];    // HTML of the button/link
+        // $class   = $this->options['class'];   // CSS class of the button/link
+        $preload = $this->options['preload']; // path to modal for saving meta data about the file
+
+        $btn_id    = $this->options['btn_id'];    
+        $btn_class = $this->options['btn_class']; 
+        $btn_icon  = $this->options['btn_icon'];  
+        $btn_text  = $this->options['btn_text'];  
+
+        // build the button
+        $formHTML = '<form>';
+        $formHTML .= "<input type=\"hidden\" name=\"preload\" value = \"$preload\">";
+        $formHTML .= "<a href='#{$name}_upload_modal' id='{$name}_button' role='button' data-toggle='modal' title='{$Title}'>";
+        $formHTML .= "<button id=\"{$btn_id}\" class=\"{$btn_class}\"><span class=\"{$btn_icon}\">&nbsp;</span>{$btn_text}</button>";
+        $formHTML .= "</a>";
+        $formHTML .= "</form>";
 
         /* Return the templated string */
-        return "<a href='#{$name}_upload_modal' id='{$name}_button' role='button' data-toggle='modal' title='{$Title}'>{$HTML}</a>";
+        return $formHTML;
     }
 
     public function Controller() {
         $this->log->debug("ImportExcel.php - Controller"); 
+        $this->log->debug($this->options); 
         // if AJAX parameters are present
         if (isset($_GET['excel_mgr_ajax'])
             && isset($_GET['project_id'])
@@ -131,6 +151,11 @@ class ExcelMgr_View_ImportExcel
             }
         }
         else {
+            $this->log->debug($this->options['preload']);
+            if ($this->options['preload']) {
+                // allow a modal to capture human entred data for the upload
+                $this->PreLoadModal();
+            }
             // Add the upload/history modal to the view
             $this->UploadModal();
 
@@ -141,32 +166,34 @@ class ExcelMgr_View_ImportExcel
                 if (($_POST['project_id']==$this->project_id)
                     && ($_POST['table_name']==$this->table_name)
                     && ($_POST['control_name']==$this->name)
-                ) {
-                    if (isset($_POST['batch_id'])) {
-                        if ($_POST['batch_id']!=0) {
-                            $this->LogModal();
-                            return;
-                        }
-                    }
-
-                    if (isset($_POST['form_name']))
-                        if ($_POST['form_name']=='upload') {
-                            if ($this->ProcessFile()) {
-                                $this->MapModal();
-                            }
-                            else {
-                                echo "<script>\n";
-                                echo "alert('Error: Could not process file.');\n";
-                                echo "</script>\n";
+                    ) {
+                        if (isset($_POST['batch_id'])) {
+                            if ($_POST['batch_id']!=0) {
+                                $this->LogModal();
+                                return;
                             }
                         }
 
-                        if ($_POST['form_name']=='map') {
-                            $this->file_meta = $_POST['file_meta'];
-                            if (isset($_POST['Load']))
-                                $this->LoadModal();
-                            else
-                                $this->MapModal();
+                        if (isset($_POST['form_name'])){
+                            if ($_POST['form_name']=='upload') {
+                                if ($this->ProcessFile()) {
+                                    $this->MapModal();
+                                }
+                                else {
+                                    echo "<script>\n";
+                                    echo "alert('Error: Could not process file.');\n";
+                                    echo "</script>\n";
+                                }
+                            }
+
+                            if ($_POST['form_name']=='map') {
+                                $this->file_meta = $_POST['file_meta'];
+                                if (isset($_POST['Load'])){
+                                    $this->LoadModal();
+                                }else{
+                                    $this->MapModal();
+                                }
+                            }
                         }
                 }
             }
@@ -183,6 +210,15 @@ class ExcelMgr_View_ImportExcel
      * By: jstormes Oct 22, 2013
      *
      */
+ 
+    public function PreLoadModal()
+    {
+        $this->log->debug("ImportExcel.php - PreLoadModal");
+        $modalPath = $this->options['preload'];
+    }
+
+
+
     public function UploadModal() {
         $this->log->debug("ImportExcel.php - UploadModal");
         /* Create modal by using the Zend_View similar to using the
@@ -371,6 +407,7 @@ class ExcelMgr_View_ImportExcel
         $Batch_Row->data_start_row  = $_POST['dataStartRow'];
         
         $Batch_Row->callback        = $_POST['callback'];        
+        $Batch_Row->preloadData     = $_POST['preloadData'];        
         
         $Batch_id                   = $Batch_Row->save();
 
