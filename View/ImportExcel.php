@@ -152,12 +152,14 @@ class ExcelMgr_View_ImportExcel
         }
         else {
             $this->log->debug($this->options['preload']);
-            if ($this->options['preload']) {
-                // allow a modal to capture human entred data for the upload
+            if (!is_null($this->options['preload'])) {
+                // allow a modal to capture human entered data for the upload
                 $this->PreLoadModal();
+            }else{
+                // Add the upload/history modal to the view
+                $this->UploadModal();
+                
             }
-            // Add the upload/history modal to the view
-            $this->UploadModal();
 
             if (isset($_POST['project_id'])
                 && isset($_POST['table_name'])
@@ -215,6 +217,17 @@ class ExcelMgr_View_ImportExcel
     {
         $this->log->debug("ImportExcel.php - PreLoadModal");
         $modalPath = $this->options['preload'];
+        $modalView = new Zend_View();
+
+        $modalView->setScriptPath( APPLICATION_PATH.'/views/scripts/');
+        $modalView->name = $this->name;
+
+$this->log->debug($this->options['preload']);
+$this->log->debug($modalView->name);
+$this->log->debug( $modalView->render($modalPath) );
+
+        $this->log->debug(APPLICATION_PATH);
+        $this->layout->modals .= $modalView->render($modalPath);
     }
 
 
@@ -237,9 +250,9 @@ class ExcelMgr_View_ImportExcel
         $modalView->MAX_FILE_SIZE       = ($upload_max_filesize<$post_max_size?$upload_max_filesize:$post_max_size)-1;
 
         // Boilerplate modal view varables.
-        $modalView->name  = $this->name;
-        $modalView->Title = $this->options['Title'];
-        $modalView->Help  = $this->options['Help'];
+        $modalView->name       = $this->name;
+        $modalView->Title      = $this->options['Title'];
+        $modalView->Help       = $this->options['Help'];
         $modalView->project_id = $this->project_id;
         $modalView->table_name = $this->table_name;
 
@@ -407,7 +420,7 @@ class ExcelMgr_View_ImportExcel
         $Batch_Row->data_start_row  = $_POST['dataStartRow'];
         
         $Batch_Row->callback        = $_POST['callback'];        
-        $Batch_Row->preloadData     = $_POST['preloadData'];        
+        $Batch_Row->preload_data     = $_POST['preloadData'];        
         
         $Batch_id                   = $Batch_Row->save();
 
