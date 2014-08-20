@@ -131,7 +131,8 @@ class ExcelMgr_View_ImportExcel
 
     public function Controller() {
         $this->log->debug("ImportExcel.php - Controller"); 
-        $this->log->debug($this->options); 
+        // $this->log->debug($this->options); 
+
         // if AJAX parameters are present
         if (isset($_GET['excel_mgr_ajax'])
             && isset($_GET['project_id'])
@@ -149,39 +150,48 @@ class ExcelMgr_View_ImportExcel
                 if ($_GET['procedure']=="load_history")
                     $this->load_history();
             }
-        }
-        else {
-            $this->log->debug($this->options['preload']);
-            if (!is_null($this->options['preload'])) {
-                // allow a modal to capture human entered data for the upload
-                $this->PreLoadModal();
-            }else{
-                // Add the upload/history modal to the view
-                $this->UploadModal();
-                
-            }
+        } else {
+            
+// $this->log->debug($this->options['preload']);
+// $preloadData = json_encode($_POST);
+// $this->log->debug($preloadData); 
 
-            if (isset($_POST['project_id'])
-                && isset($_POST['table_name'])
-                && isset($_POST['control_name'])
-            ) {
-                if (($_POST['project_id']==$this->project_id)
-                    && ($_POST['table_name']==$this->table_name)
-                    && ($_POST['control_name']==$this->name)
-                    ) {
+            // if (!is_null($this->options['preload'])) {
+            //     // allow a modal to capture human entered data for the upload
+            //     $this->PreLoadModal();
+            // } else {
+            //     // Add the upload/history modal to the view
+            //     $this->UploadModal();
+            // }
+
+$this->log->debug($_POST);         
+// $this->log->debug($this->table_name);         
+
+            if (isset($_POST['project_id']) 
+                && isset($_POST['table_name']) 
+                && isset($_POST['control_name'])) {
+                
+                if (($_POST['project_id']==$this->project_id) 
+                    && ($_POST['table_name']==$this->table_name) 
+                    && ($_POST['control_name']==$this->name)) {
+                    
                         if (isset($_POST['batch_id'])) {
                             if ($_POST['batch_id']!=0) {
                                 $this->LogModal();
                                 return;
                             }
                         }
-
                         if (isset($_POST['form_name'])){
+                            if($_POST['form_name']=='preload') {
+                                $this->log->debug('form name = preload'); 
+                                $preloadData = json_encode($_POST);
+                                $this->UploadModal($preloadData);
+                            }
+
                             if ($_POST['form_name']=='upload') {
                                 if ($this->ProcessFile()) {
                                     $this->MapModal();
-                                }
-                                else {
+                                } else {
                                     echo "<script>\n";
                                     echo "alert('Error: Could not process file.');\n";
                                     echo "</script>\n";
@@ -192,11 +202,22 @@ class ExcelMgr_View_ImportExcel
                                 $this->file_meta = $_POST['file_meta'];
                                 if (isset($_POST['Load'])){
                                     $this->LoadModal();
-                                }else{
+                                } else {
                                     $this->MapModal();
                                 }
                             }
+                        } else {
+
                         }
+                }
+            } else {
+                // this is the first time to the rodeo
+                if (!is_null($this->options['preload'])) {
+                    // allow a modal to capture human entered data for the upload
+                    $this->PreLoadModal();
+                } else {
+                    // Add the upload/history modal to the view
+                    $this->UploadModal();
                 }
             }
         }
@@ -220,20 +241,26 @@ class ExcelMgr_View_ImportExcel
         $modalView = new Zend_View();
 
         $modalView->setScriptPath( APPLICATION_PATH.'/views/scripts/');
-        $modalView->name = $this->name;
+        $modalView->name       = $this->name;
+        $modalView->Title      = $this->options['Title'];
+        $modalView->Help       = $this->options['Help'];
+        $modalView->project_id = $this->project_id;
+        $modalView->table_name = $this->table_name;
 
-$this->log->debug($this->options['preload']);
-$this->log->debug($modalView->name);
-$this->log->debug( $modalView->render($modalPath) );
-
-        $this->log->debug(APPLICATION_PATH);
+// $this->log->debug($this->options['preload']);
+// $this->log->debug($modalView->name);
+// $this->log->debug( $modalView->render($modalPath) );
+// $this->log->debug(APPLICATION_PATH);
         $this->layout->modals .= $modalView->render($modalPath);
     }
 
 
 
-    public function UploadModal() {
+    public function UploadModal($preloadData=null) {
         $this->log->debug("ImportExcel.php - UploadModal");
+        $this->log->debug($preloadData);
+        $this->log->debug($_POST);
+        $this->log->debug($_POST['callback']);
         /* Create modal by using the Zend_View similar to using the
          * view from the controller.
         */
@@ -250,11 +277,12 @@ $this->log->debug( $modalView->render($modalPath) );
         $modalView->MAX_FILE_SIZE       = ($upload_max_filesize<$post_max_size?$upload_max_filesize:$post_max_size)-1;
 
         // Boilerplate modal view varables.
-        $modalView->name       = $this->name;
-        $modalView->Title      = $this->options['Title'];
-        $modalView->Help       = $this->options['Help'];
-        $modalView->project_id = $this->project_id;
-        $modalView->table_name = $this->table_name;
+        $modalView->name        = $this->name;
+        $modalView->Title       = $this->options['Title'];
+        $modalView->Help        = $this->options['Help'];
+        $modalView->project_id  = $this->project_id;
+        $modalView->table_name  = $this->table_name;
+        $modalView->preloadData = $preloadData;
 
         // if callback then pass it on
         if( isset($_POST['callback'] )){        
@@ -276,13 +304,16 @@ $this->log->debug( $modalView->render($modalPath) );
 
     public function MapModal() {
         $this->log->debug("ImportExcel.php - MapModal");  
-        $this->log->debug( $_POST['worksheet_idx'] );  
+        // $this->log->debug( $_POST['worksheet_idx'] );  
 
         /* Create modal by using the Zend_View similar to using the
          * view from the controller.  */
         $modalView = new Zend_View();
         $modalView->setScriptPath( dirname(__file__) . '/modals/' );
+        $modalView->preloadData = $_POST['preloadData'];
 
+        $firstRowNames = 0
+        ;
         $xlsx = new ExcelMgr_SimpleXLSX($this->file_meta['tmp_name']);
         $worksheetNames = $xlsx->sheetNames();
 
@@ -313,7 +344,7 @@ $this->log->debug( $modalView->render($modalPath) );
         }
 
         /* Get our source tab and determine if first row contains column names */
-        // $firstRowNames = 1;
+
         $ws = $xlsx->worksheet($worksheet_idx);
         
         // get some info about the worksheet.
@@ -327,13 +358,13 @@ $this->log->debug( $modalView->render($modalPath) );
             $SourceColumns = $xlsx->row(0, $ws, $tableInfo[0]);
         }
               
-        $this->log->debug($ws);        
-        $this->log->debug($worksheet_idx);        
-        $this->log->debug($tableInfo);        
-        $this->log->debug($tableInfo[0]);        
-        $this->log->debug($tableInfo[1]);        
-        $this->log->debug($firstRowNames);        
-        $this->log->debug($SourceColumns);        
+        // $this->log->debug($ws);        
+        // $this->log->debug($worksheet_idx);        
+        // $this->log->debug($tableInfo);        
+        // $this->log->debug($tableInfo[0]);        
+        // $this->log->debug($tableInfo[1]);        
+        // $this->log->debug($firstRowNames);        
+        // $this->log->debug($SourceColumns);        
 
         /**  Destination Columns  **/
         $dest_options = array();
@@ -405,10 +436,8 @@ $this->log->debug( $modalView->render($modalPath) );
         $modalView = new Zend_View();
         $modalView->setScriptPath( dirname(__file__) . '/modals/' );
 
-        $Batch = new ExcelMgr_Models_ExcelMgrBatch();
-
+        $Batch                      = new ExcelMgr_Models_ExcelMgrBatch();
         $Batch_Row                  = $Batch->createRow();
-        
         $Batch_Row->project_id      = $this->project_id;
         $Batch_Row->file_name       = $this->file_meta['name'];
         $Batch_Row->tmp_name        = $this->file_meta['tmp_name'];
@@ -417,11 +446,9 @@ $this->log->debug( $modalView->render($modalPath) );
         $Batch_Row->table_name      = $this->destTable->info('name');
         $Batch_Row->log_file        = tempnam ( sys_get_temp_dir() , "PHPlog" );
         $Batch_Row->first_row_names = $_POST['firstRowNames'];
-        $Batch_Row->data_start_row  = $_POST['dataStartRow'];
-        
+        $Batch_Row->data_start_row  = $_POST['dataStartRow'];       
         $Batch_Row->callback        = $_POST['callback'];        
-        $Batch_Row->preload_data     = $_POST['preloadData'];        
-        
+        $Batch_Row->preload_data    = $_POST['preloadData'];        
         $Batch_id                   = $Batch_Row->save();
 
         if(property_exists($this->destTable, '_truncate')){

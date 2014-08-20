@@ -18,6 +18,8 @@
             <form method='post' name="testmod" enctype='multipart/form-data'
             onsubmit='return testmod_on_submit()'>
 
+                <input type="hidden" id="preloadData" name="preloadData" value='<?php echo $this->preloadData; ?>'></input>
+
                 <div class='modal-header'>
                     <button type='button' class='close' data-dismiss='modal'
                         aria-hidden='true'>&times;</button>
