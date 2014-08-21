@@ -164,7 +164,7 @@ class ExcelMgr_View_ImportExcel
             //     $this->UploadModal();
             // }
 
-$this->log->debug($_POST);         
+// $this->log->debug($_POST);         
 // $this->log->debug($this->table_name);         
 
             if (isset($_POST['project_id']) 
@@ -312,7 +312,7 @@ $this->log->debug($_POST);
         $modalView->setScriptPath( dirname(__file__) . '/modals/' );
         $modalView->preloadData = $_POST['preloadData'];
 
-        $firstRowNames = 0
+        $firstRowNames = 1
         ;
         $xlsx = new ExcelMgr_SimpleXLSX($this->file_meta['tmp_name']);
         $worksheetNames = $xlsx->sheetNames();
