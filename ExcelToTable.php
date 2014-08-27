@@ -186,6 +186,13 @@ class ExcelMgr_ExcelToTable
 			$this->destTable->delete($where);
 			return false;
 		}
+		else {
+			$data = array(
+				'deleted' => 0
+			);
+			$where = $this->destTable->getAdapter()->quoteInto('excel_mgr_batch_id = ?', $this->batch_id);
+			$this->destTable->update($data, $where);
+		}
 		
 		$end_time = time();
 		
@@ -197,157 +204,6 @@ class ExcelMgr_ExcelToTable
 		$this->destTable->update(array('deleted'=>0), $where);
 		
 		
-		return true;
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		//$TotalRows = $worksheetInfo[$this->tab]['totalRows'];
-		//$LastColumn = $worksheetInfo[$this->tab]['lastColumnLetter'];
-		
-		//$objReader->setLoadSheetsOnly($worksheetNames[$this->tab]);
-		//$objReader->setReadDataOnly(true); /* this */
-		
-		/**  Create a new Instance of our Read Filter  **/
-		//$chunkFilter = new ExcelMgr_chunkReadFilter();
-		/**  Tell the Reader that we want to use the Read Filter  **/
-		//$objReader->setReadFilter($chunkFilter);
-		
-		//$BlockSize=250;
-		
-		$map=$this->map;
-		
-		
-		echo "Ttoal Rows ".$TotalRows."\n";
-		echo "Block Size ".$BlockSize."\n";
-		
-		$BlockCount = round($TotalRows/$BlockSize+0.5);
-		echo "Block count ". $BlockCount . "\n";
-		$error_cnt = 0;
-		for($i=0;$i<=$BlockCount;$i++) {
-			
-			$rows = 10;
-			$blockStart = $BlockSize*$i;
-			$blockEnd = ($blockStart+$BlockSize);
-			if ($blockStart==0) {
-				if ($this->first_row_names==1) {
-					$blockStart=2;
-					//$blockEnd = ($blockStart+$BlockSize)-1;
-				}
-				else {
-					$blockStart=1;
-					//$blockEnd = ($blockStart+$BlockSize)-1;
-				}
-			}
-			
-				
-			
-			if ($blockEnd>$TotalRows)
-				$blockEnd=$TotalRows+1;  
-			$chunkFilter->setRows($blockStart,$blockEnd-$blockStart);
-			$objPHPExcel = $objReader->load($this->tmp_name);
-			//$blockEnd2 = $blockEnd-1;
-			$sheetData = $objPHPExcel->getActiveSheet()->rangeToArray("A{$blockStart}:{$LastColumn}{$blockEnd}",null,false,false,true);
-			//$columns = $sheetData[1];
-			//echo "\n\n\n****************************************\n";
-			//echo $BlockSize*$i."\n";
-			//print_r($sheetData);
-			$this->Batch_Row->status="{$blockStart}/{$TotalRows}";
-			$this->Batch_Row->save();
-			echo "Load Excel Rows $blockStart to $blockEnd\n";
-			//echo "{$blockStart}/{$TotalRows}\n";
-			//sleep(1);
-			
-			
-			array_pop($sheetData);
-			
-			foreach($sheetData as $Row=>$Columns){
-				//echo "row $Row\n";
-				$NewRow=$this->destTable->createRow();
-				
-				if ($error_cnt>20)
-					break;
-				
-				//print_r($Columns);
-				foreach($Columns as $SourceColumnName=>$Value) {
-					if (isset($map[$SourceColumnName])) {
-						if ($map[$SourceColumnName]!='ignore') {
-							switch ($metadata[$map[$SourceColumnName]]['DATA_TYPE']) {
-								case 'date':
-									$NewRow->$map[$SourceColumnName] = date('c',($Value - 25569) * 86400);
-									break;
-								case 'int':
-								case 'bigint':
-									if (is_numeric($Value))
-										$NewRow->{$map[$SourceColumnName]}=$Value;
-									else 
-										$NewRow->{$map[$SourceColumnName]}=null;
-									break;
-								default:
-									$NewRow->{$map[$SourceColumnName]}=$Value;
-									break;
-							}
-// 							if ($metadata[$map[$SourceColumnName]]['DATA_TYPE']=='date') {
-// 								$NewRow->$map[$SourceColumnName] = date('c',($Value - 25569) * 86400);
-// 							}
-// 							else {
-// 								$NewRow->{$map[$SourceColumnName]}=$Value;
-// 								if ($map[$SourceColumnName]=='descrepancy_txt') {
-// 									$NewRow->descrepancy_txt="$Value";
-// 								}	
-// 							}
-					
-						}
-					}
-				}
-				
-				try {
-					// Attempt insert
-					//$this->log->info("Writing Row");
-					$NewRow->project_id=$this->project_id;
-					$NewRow->excel_mgr_batch_id=$this->batch_id;
-					$NewRow->deleted=1;
-					//print_r($NewRow->toArray());
-					$id=$NewRow->save();
-					
-					
-					//$this->log->info("Row $id written.");
-					
-				}
-				catch (Exception $Ex) {
-					// Catch errors
-					$error_cnt++;
-					echo "Error on row {$Row}, ".$Ex->getMessage()."\n";
-					$log_row = $LogTable->createRow();
-					$log_row->excel_mgr_batch_id = $this->batch_id;
-					$log_row->row = json_encode($Columns);
-					$log_row->msg = $Ex->getMessage();
-				}
-				unset($NewRow);
-				gc_collect_cycles();
-				
-			}
-			//echo "********************\n";
-			$objPHPExcel->disconnectWorksheets();
-			unset($objPHPExcel);
-			unset($sheetData);
-		}
-		
-		if ($error_cnt!=0) {
-			// Delete this batch from the table.
-			$where = $this->destTable->getAdapter()->quoteInto('excel_mgr_batch_id = ?', $this->batch_id);
-			$this->destTable->delete($where);
-			return false;
-		}
 		return true;
 	}
 	

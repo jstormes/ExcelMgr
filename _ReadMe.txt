@@ -1,5 +1,10 @@
 
 
+IDEA:
+=====
+
+Look at https://gist.github.com/searbe/3284011 might be faster!
+
 ExcelMgr is a library for importing and exporting data from a database table to an
 excel worksheet.
 
