@@ -131,24 +131,26 @@ NOTE: All tables to be loaded must have these columns:
 
 In addition to any other tables needed for the specific application, the `excel_mgr_batch` and `excel_mgr_log` tables are required.
 
-    DROP TABLE IF EXISTS `excel_mgr_batch`;
-    CREATE TABLE IF NOT EXISTS `excel_mgr_batch` (
-    `excel_mgr_batch_id` bigint(20) NOT NULL AUTO_INCREMENT,
-    `project_id` bigint(20) NOT NULL,
-    `file_name` varchar(255) COLLATE utf8_unicode_ci NOT NULL,
-    `tmp_name` varchar(1024) COLLATE utf8_unicode_ci NOT NULL,
-    `tab` varchar(255) COLLATE utf8_unicode_ci NOT NULL,
-    `first_row_names` tinyint(1) NOT NULL,
-    `table_name` varchar(255) COLLATE utf8_unicode_ci NOT NULL,
-    `map` varchar(1024) COLLATE utf8_unicode_ci NOT NULL,
-    `pid` bigint(20) DEFAULT NULL,
-    `status` varchar(50) COLLATE utf8_unicode_ci NOT NULL,
-    `log_file` varchar(255) COLLATE utf8_unicode_ci NOT NULL,
-    `uptd_usr_id` int(11) NOT NULL,
-    `updt_dtm` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    `deleted` tinyint(1) NOT NULL,
-    PRIMARY KEY (`excel_mgr_batch_id`)
-    ) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci AUTO_INCREMENT=7 ;
+    CREATE TABLE `excel_mgr_batch` (
+      `excel_mgr_batch_id` bigint(20) NOT NULL AUTO_INCREMENT,
+      `project_id` bigint(20) NOT NULL,
+      `file_name` varchar(255) COLLATE utf8_unicode_ci NOT NULL,
+      `tmp_name` varchar(1024) COLLATE utf8_unicode_ci NOT NULL,
+      `tab` varchar(255) COLLATE utf8_unicode_ci NOT NULL,
+      `first_row_names` tinyint(1) NOT NULL,
+      `table_name` varchar(255) COLLATE utf8_unicode_ci NOT NULL,
+      `map` varchar(1024) COLLATE utf8_unicode_ci NOT NULL,
+      `pid` bigint(20) DEFAULT NULL,
+      `status` varchar(50) COLLATE utf8_unicode_ci NOT NULL,
+      `log_file` varchar(255) COLLATE utf8_unicode_ci NOT NULL,
+      `uptd_usr_id` int(11) NOT NULL,
+      `updt_dtm` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      `deleted` tinyint(1) NOT NULL,
+      `data_start_row` int(11) DEFAULT '0',
+      `callback` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL,
+      `preload_data` text COLLATE utf8_unicode_ci,
+      PRIMARY KEY (`excel_mgr_batch_id`)
+    ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
 
     DROP TABLE IF EXISTS `excel_mgr_log`;
