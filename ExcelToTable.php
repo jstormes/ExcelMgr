@@ -87,7 +87,7 @@ class ExcelMgr_ExcelToTable
         
         $pos_str = implode(",",$tmp_str);
         
-        $sql = "INSERT INTO {$this->table_name} {$str_columns}
+        $sql = "INSERT INTO `{$this->table_name}` {$str_columns}
                 VALUES ({$pos_str})";
         
         echo "\n";

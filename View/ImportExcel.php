@@ -105,11 +105,11 @@ class ExcelMgr_View_ImportExcel
      * @return string
      */
     public function Button() {
+        
         /* Copy varables for template */
         $name  = $this->name;               // Control name
         $Title   = $this->options['Title'];   // title for on hover event
-        // $HTML    = $this->options['HTML'];    // HTML of the button/link
-        // $class   = $this->options['class'];   // CSS class of the button/link
+        $class   = $this->options['class'];   // CSS class of the button/link
         $preload = $this->options['preload']; // path to modal for saving meta data about the file
 
         $btn_id    = $this->options['btn_id'];    
@@ -117,13 +117,19 @@ class ExcelMgr_View_ImportExcel
         $btn_icon  = $this->options['btn_icon'];  
         $btn_text  = $this->options['btn_text'];  
 
-        // build the button
-        $formHTML = '<form>';
-        $formHTML .= "<input type=\"hidden\" name=\"preload\" value = \"$preload\">";
-        $formHTML .= "<a href='#{$name}_upload_modal' id='{$name}_button' role='button' data-toggle='modal' title='{$Title}'>";
-        $formHTML .= "<button id=\"{$btn_id}\" class=\"{$btn_class}\"><span class=\"{$btn_icon}\">&nbsp;</span>{$btn_text}</button>";
-        $formHTML .= "</a>";
-        $formHTML .= "</form>";
+        if (isset($this->options['HTML'])) {
+            $HTML    = $this->options['HTML'];    // HTML of the button/link
+            $formHTML = "<a href='#{$name}_upload_modal' id='{$name}_button' role='button' data-toggle='modal' title='{$Title}'>{$HTML}</a>";
+        } else {
+            // build the button
+            $formHTML = '<form>';
+            $formHTML .= "<input type=\"hidden\" name=\"preload\" value = \"$preload\">";
+            $formHTML .= "<a href='#{$name}_upload_modal' id='{$name}_button' role='button' data-toggle='modal' title='{$Title}'>";
+            $formHTML .= "<button id=\"{$btn_id}\" class=\"{$btn_class}\"><span class=\"{$btn_icon}\">&nbsp;</span>{$btn_text}</button>";
+            $formHTML .= "</a>";
+            $formHTML .= "</form>";
+        }
+        
 
         /* Return the templated string */
         return $formHTML;
