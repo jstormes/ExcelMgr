@@ -8,9 +8,10 @@
 				<input type="hidden" name="project_id" value="<?php echo $this->project_id; ?>"></input>
 				<input type="hidden" name="table_name" value="<?php echo $this->table_name; ?>"></input>
 				<input type="hidden" name="form_name" value="upload"></input>
+                <input type="hidden" id="callback" name="callback" value="<?php echo $this->callback; ?>"></input>
+                <input type="hidden" id="preloadData" name="preloadData" value='<?php echo $this->preloadData; ?>'></input>
 				<div class='modal-header'>
-					<button type='button' class='close' data-dismiss='modal'
-						aria-hidden='true'>&times;</button>
+					<button type='button' class='close' data-dismiss='modal' aria-hidden='true'>&times;</button>
 					<h4 class='modal-title'>Load History Status</h4>
 				</div>
 				<div class='modal-body'>
@@ -35,7 +36,9 @@
 
 <script>
 
-$( document ).ready(function() {$('#<?php echo $this->name; ?>_load').modal();});
+$( document ).ready(function() {
+    $('#<?php echo $this->name; ?>_load').modal();
+});
 
 
 var <?php echo $this->name; ?>_timer;
