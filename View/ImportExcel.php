@@ -266,7 +266,8 @@ class ExcelMgr_View_ImportExcel
         $this->log->debug("ImportExcel.php - UploadModal");
         $this->log->debug($preloadData);
         $this->log->debug($_POST);
-        $this->log->debug($_POST['callback']);
+        if (isset($_POST['callback']))
+        	$this->log->debug($_POST['callback']);
         /* Create modal by using the Zend_View similar to using the
          * view from the controller.
         */
