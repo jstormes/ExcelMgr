@@ -384,7 +384,16 @@ class ExcelMgr_View_ImportExcel
 
         // $this->log->debug($this->options);
         $mapping = array();
-        if (isset($this->options['mapping'])) {
+        if (isset($this->options['mapping_strategy'])) {
+        	if ($this->options['mapping_strategy']=='First Fit') {
+        		$t = range('A','Z');
+        		$i=0;
+        		foreach($SourceColumns as $key=>$value) {
+        			$mapping[$key] = $t[$i++];
+        		}
+        	}
+        }
+        else if (isset($this->options['mapping'])) {
             //$this->log->debug("Mapping found");
             //$mapping = $this->options['mapping'];
             // $this->log->debug($SourceColumns);
