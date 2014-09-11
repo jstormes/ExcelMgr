@@ -47,7 +47,10 @@ class ExcelMgr_ExcelToTable
         
         $dbAdapter = Zend_Db_Table::getDefaultAdapter();
         
-        $this->destTable = new Zend_Db_Table($this->table_name);
+        //$this->destTable = new Zend_Db_Table($this->table_name);
+        //$t=
+        $this->destTable = new $this->table_name();
+        $this->table_name = $this->destTable->info('name');
         
         $metadata = $this->destTable->info('metadata');
         
@@ -86,6 +89,8 @@ class ExcelMgr_ExcelToTable
             $tmp_str[]="?";
         
         $pos_str = implode(",",$tmp_str);
+        
+        //$table = 
         
         $sql = "INSERT INTO `{$this->table_name}` {$str_columns}
                 VALUES ({$pos_str})";

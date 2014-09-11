@@ -78,7 +78,8 @@ class ExcelMgr_View_ImportExcel
         $this->options = array_merge($_defaults,$options);
 
         // Get our table name from the model
-        $this->table_name = $this->destTable->info('name');
+       // $this->table_name = $this->destTable->info('name');
+        $this->table_name = get_class($this->destTable);
 
         // Get the meta data from the model
         $this->dest_meta = $destination->info('metadata');
@@ -459,7 +460,8 @@ class ExcelMgr_View_ImportExcel
         $Batch_Row->tmp_name        = $this->file_meta['tmp_name'];
         $Batch_Row->tab             = $_POST['worksheet_idx'];
         $Batch_Row->map             = json_encode($_POST['mapping']);
-        $Batch_Row->table_name      = $this->destTable->info('name');
+       // $Batch_Row->table_name      = $this->destTable->info('name');
+        $Batch_Row->table_name      = $this->table_name;
         $Batch_Row->log_file        = tempnam ( sys_get_temp_dir() , "PHPlog" );
         $Batch_Row->first_row_names = $_POST['firstRowNames'];
         $Batch_Row->data_start_row  = $_POST['dataStartRow'];       
