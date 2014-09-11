@@ -78,8 +78,7 @@ class ExcelMgr_View_ImportExcel
         $this->options = array_merge($_defaults,$options);
 
         // Get our table name from the model
-       // $this->table_name = $this->destTable->info('name');
-        $this->table_name = get_class($this->destTable);
+        $this->table_name = $this->destTable->info('name');
 
         // Get the meta data from the model
         $this->dest_meta = $destination->info('metadata');
@@ -267,8 +266,9 @@ class ExcelMgr_View_ImportExcel
         $this->log->debug("ImportExcel.php - UploadModal");
         $this->log->debug($preloadData);
         $this->log->debug($_POST);
-        if (isset($_POST['callback']))
-        	$this->log->debug($_POST['callback']);
+        if (isset($_POST['callback'])) {
+            $this->log->debug($_POST['callback']);
+        }
         /* Create modal by using the Zend_View similar to using the
          * view from the controller.
         */
@@ -385,16 +385,7 @@ class ExcelMgr_View_ImportExcel
 
         // $this->log->debug($this->options);
         $mapping = array();
-        if (isset($this->options['mapping_strategy'])) {
-        	if ($this->options['mapping_strategy']=='First Fit') {
-        		$t = range('A','Z');
-        		$i=0;
-        		foreach($SourceColumns as $key=>$value) {
-        			$mapping[$key] = $t[$i++];
-        		}
-        	}
-        }
-        else if (isset($this->options['mapping'])) {
+        if (isset($this->options['mapping'])) {
             //$this->log->debug("Mapping found");
             //$mapping = $this->options['mapping'];
             // $this->log->debug($SourceColumns);
@@ -460,8 +451,7 @@ class ExcelMgr_View_ImportExcel
         $Batch_Row->tmp_name        = $this->file_meta['tmp_name'];
         $Batch_Row->tab             = $_POST['worksheet_idx'];
         $Batch_Row->map             = json_encode($_POST['mapping']);
-       // $Batch_Row->table_name      = $this->destTable->info('name');
-        $Batch_Row->table_name      = $this->table_name;
+        $Batch_Row->table_name      = $this->destTable->info('name');
         $Batch_Row->log_file        = tempnam ( sys_get_temp_dir() , "PHPlog" );
         $Batch_Row->first_row_names = $_POST['firstRowNames'];
         $Batch_Row->data_start_row  = $_POST['dataStartRow'];       
