@@ -30,7 +30,7 @@ class ExcelMgr_ExcelToTable
         $this->first_row_names = $this->Batch_Row->first_row_names;
         $this->data_start_row  = $this->Batch_Row->data_start_row;
         
-        $this->map        = json_decode($this->Batch_Row->map,true);
+        $this->map         = json_decode($this->Batch_Row->map,true);
         
         //$this->log->debug($this->batch_id);
         //$this->log->debug($this->Batch_Row);
