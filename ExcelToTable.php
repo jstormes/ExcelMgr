@@ -40,50 +40,54 @@ class ExcelMgr_ExcelToTable
     
     
     function load() {
+echo('ExcelToTable.php -> load() ---------------<br>');
         
         $start_time = time();
-        
+        $error_cnt = 0;
+
         $LogTable = new ExcelMgr_Models_ExcelMgrLog();
-        
         $dbAdapter = Zend_Db_Table::getDefaultAdapter();
         
         //$this->destTable = new Zend_Db_Table($this->table_name);
         //$t=
         $this->destTable = new $this->table_name();
         $this->table_name = $this->destTable->info('name');
-        
+
+
+// print_r($this->destTable);
+echo('<br>TableName: '.$this->table_name.'<br>');
+
         $metadata = $this->destTable->info('metadata');
-        
+
+echo('metadata ---');
+// print_r($metadata);
+echo('<br>');
+
+        // get information about the spreadsheet
         $xlsx = new ExcelMgr_SimpleXLSX($this->tmp_name);
-        
-        $worksheetDimension = $xlsx->dimension($this->tab);
-        
-        
+        $worksheetDimension = $xlsx->dimension($this->tab);        
         $LastColumn = $worksheetDimension[0];
         $TotalRows  = $worksheetDimension[1];
+
+
+
+echo "Total Rows ".$TotalRows."\n";
         
-        
-        echo "Total Rows ".$TotalRows."\n";
-        $error_cnt=0;
-        $map=$this->map;
-        
-        $map2=array();
+
+        // map the spreadsheet to the DB table
+        $map = $this->map;        
+        $map2 = array();
         foreach($map as $k=>$v) {
-            if ($v!='ignore')
-                $map2[$k]=$v;
+            if ($v != 'ignore')
+                $map2[$k] = $v;
         }
         
-        $map=$map2;
-        $map[] = "project_id";
-        $map[] = "excel_mgr_batch_id";
-        $map[] = "deleted";
-        
-        //$str_columns = implode(",",$map);
-        
+        $map         = $map2;
+        $map[]       = "project_id";
+        $map[]       = "excel_mgr_batch_id";
+        $map[]       = "deleted";        
         $str_columns = " (`".implode("`, `", $map)."`)";
-        
-        
-        
+
         $tmp_str = array();
         foreach ($map as $m)
             $tmp_str[]="?";
@@ -95,23 +99,34 @@ class ExcelMgr_ExcelToTable
         $sql = "INSERT INTO `{$this->table_name}` {$str_columns}
                 VALUES ({$pos_str})";
         
-        echo "\n";
-        print_r($map);
-        echo "\n";
-        print_r($sql);
-        echo "\n";
+echo "\n $map --";
+print_r($map);
+echo "\n $sql --";
+print_r($sql);
+echo "\n";
         
-            
         $stmt = $dbAdapter->prepare($sql);
         
         $ws=$xlsx->worksheet( $this->tab );
         list($cols,) = $xlsx->dimension( $this->tab );
-        
+ 
+        if(method_exists($this->destTable, 'renameColumns')){        
+            $this->destTable->renameColumns($xlsx->row(0,$ws,$cols));   
+
+echo '<br>******************** renameColumns ********************<br>';
+var_dump($sourceColumns);
+echo '***** end renameColumns ************* <br>';
+
+            
+        }
+
+
+
         $backgound_columns = array();
         $backgound_columns[] = 'project_id';
         $backgound_columns[] = 'excel_mgr_batch_id';
-        $backgound_columns[] = 'deleted';
-        
+        $backgound_columns[] = 'deleted';       
+
 
         $i = $this->data_start_row;
         // for($i=1;$i<$TotalRows;$i++) {
@@ -357,6 +372,9 @@ class ExcelMgr_ExcelToTable
             $this->destTable->delete($where);
             return false;
         }
+
+echo('end load()----------------<br>');
+
         return true;
     }
     
