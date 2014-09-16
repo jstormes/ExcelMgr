@@ -2,26 +2,20 @@
 
 class ExcelMgr_ExcelToTable
 {
-    
-    
     /** @var Zend_Db_Table */
     public $Batch_Row;
     
     /** @var Zend_Db_Table */
-    public $destTable;
-    
+    public $destTable;   
     
     public function __construct($batch_id) {
-        ini_set('memory_limit', '2G');
-        
         $this->log = Zend_Registry::get('log');
-        
-        $Batch = new ExcelMgr_Models_ExcelMgrBatch();
-        
+        ini_set('memory_limit', '2G');
+
         $this->batch_id = $batch_id;
         
-        $this->Batch_Row=$Batch->find($batch_id)->current();
-        
+        $Batch                 = new ExcelMgr_Models_ExcelMgrBatch();
+        $this->Batch_Row       = $Batch->find($batch_id)->current();
         $this->file_name       = $this->Batch_Row->file_name;
         $this->tmp_name        = $this->Batch_Row->tmp_name;
         $this->tab             = $this->Batch_Row->tab;
@@ -51,8 +45,8 @@ echo('ExcelToTable.php -> load() ---------------<br>');
         //$this->destTable = new Zend_Db_Table($this->table_name);
         //$t=
         $this->destTable = new $this->table_name();
+        $this->destTable->project_id = $this->project_id;
         $this->table_name = $this->destTable->info('name');
-
 
 // print_r($this->destTable);
 echo('<br>TableName: '.$this->table_name.'<br>');
@@ -69,17 +63,13 @@ echo('<br>');
         $LastColumn = $worksheetDimension[0];
         $TotalRows  = $worksheetDimension[1];
 
-
-
 echo "Total Rows ".$TotalRows."\n";
         
-
         // map the spreadsheet to the DB table
         $map = $this->map;        
         $map2 = array();
         foreach($map as $k=>$v) {
-            if ($v != 'ignore')
-                $map2[$k] = $v;
+            if ($v != 'ignore') $map2[$k] = $v;
         }
         
         $map         = $map2;
@@ -89,20 +79,18 @@ echo "Total Rows ".$TotalRows."\n";
         $str_columns = " (`".implode("`, `", $map)."`)";
 
         $tmp_str = array();
-        foreach ($map as $m)
+        foreach ($map as $m) {
             $tmp_str[]="?";
-        
+        }
+
         $pos_str = implode(",",$tmp_str);
-        
-        //$table = 
-        
         $sql = "INSERT INTO `{$this->table_name}` {$str_columns}
                 VALUES ({$pos_str})";
         
 echo "\n $map --";
 print_r($map);
-echo "\n $sql --";
-print_r($sql);
+// echo "\n $sql --";
+// print_r($sql);
 echo "\n";
         
         $stmt = $dbAdapter->prepare($sql);
@@ -110,34 +98,37 @@ echo "\n";
         $ws=$xlsx->worksheet( $this->tab );
         list($cols,) = $xlsx->dimension( $this->tab );
  
-        if(method_exists($this->destTable, 'renameColumns')){        
-            $this->destTable->renameColumns($xlsx->row(0,$ws,$cols));   
+        if(method_exists($this->destTable, 'renameColumns')){ 
+            echo '<br>******************** renameColumns ********************<br>';
+            // var_dump($xlsx->row(0, $ws, $cols), $this->project_id);
+            // go to the destination table's model and save the column names.     
+            $columnNames = $xlsx->row(0, $ws, $cols);
+            var_dump($map,$columnNames);  
+ 
+            $tempArray = array();
+            $count = 0;
+            foreach($map as $key=>$value){
+                $tempArray[] = array($value, $columnNames[$count]);
+                $count++;
+            }
+            var_dump($tempArray);
 
-echo '<br>******************** renameColumns ********************<br>';
-var_dump($sourceColumns);
-echo '***** end renameColumns ************* <br>';
-
+            $this->destTable->renameColumns($tempArray, $this->project_id);   
             
         }
-
-
 
         $backgound_columns = array();
         $backgound_columns[] = 'project_id';
         $backgound_columns[] = 'excel_mgr_batch_id';
         $backgound_columns[] = 'deleted';       
 
-
         $i = $this->data_start_row;
         // for($i=1;$i<$TotalRows;$i++) {
         for($i;$i<$TotalRows;$i++) {
-            $row = $xlsx->row($i,$ws,$cols);
-            
+            $row = $xlsx->row($i,$ws,$cols);           
             $new_row = array();
             foreach($map as $k=>$v) {
-            
                 if (!in_array($v,$backgound_columns)) {
-                
                     if ($metadata[$map[$k]]['DATA_TYPE']=='date')
                         $new_row[]=date('c',($row[$k] - 25569) * 86400);
                     else {
@@ -160,7 +151,6 @@ echo '***** end renameColumns ************* <br>';
                                 $new_row[]=(string)$row[$k];
                                 break;
                         }
-                        
                     }
                 }
             }
@@ -168,8 +158,7 @@ echo '***** end renameColumns ************* <br>';
             $row=$new_row;
             $row[]=$this->project_id;
             $row[]=$this->batch_id;
-            $row[]=1;
-            
+            $row[]=1;           
             
             if ($error_cnt>20)
                 break;
@@ -179,13 +168,11 @@ echo '***** end renameColumns ************* <br>';
                 $this->Batch_Row->save();
                 //unset($xlsx);
                 //gc_collect_cycles();
-                //$xlsx = new ExcelMgr_SimpleXLSX($this->tmp_name);
-                
+                //$xlsx = new ExcelMgr_SimpleXLSX($this->tmp_name);        
             }
             
             try {
-                $stmt->execute($row);   
-                
+                $stmt->execute($row);
             }
             catch (Exception $Ex) {
                 // Catch errors
@@ -199,10 +186,8 @@ echo '***** end renameColumns ************* <br>';
             }
             unset($row);
             unset($new_row);
-            //gc_collect_cycles();
-            
+            //gc_collect_cycles();       
         }
-        
         
         if ($error_cnt!=0) {
             // Delete this batch from the table.
@@ -219,8 +204,7 @@ echo '***** end renameColumns ************* <br>';
         
         $where = $this->destTable->getAdapter()->quoteInto('excel_mgr_batch_id = ?', $this->batch_id);
         $this->destTable->update(array('deleted'=>0), $where);
-        
-        
+          
         return true;
         
         
@@ -272,9 +256,7 @@ echo '***** end renameColumns ************* <br>';
                     //$blockEnd = ($blockStart+$BlockSize)-1;
                 }
             }
-            
-                
-            
+                        
             if ($blockEnd>$TotalRows)
                 $blockEnd=$TotalRows+1;  
             $chunkFilter->setRows($blockStart,$blockEnd-$blockStart);
@@ -290,7 +272,6 @@ echo '***** end renameColumns ************* <br>';
             echo "Load Excel Rows $blockStart to $blockEnd\n";
             //echo "{$blockStart}/{$TotalRows}\n";
             //sleep(1);
-            
             
             array_pop($sheetData);
             
@@ -328,8 +309,7 @@ echo '***** end renameColumns ************* <br>';
 //                              if ($map[$SourceColumnName]=='descrepancy_txt') {
 //                                  $NewRow->descrepancy_txt="$Value";
 //                              }   
-//                          }
-                    
+//                          }                   
                         }
                     }
                 }
@@ -342,8 +322,7 @@ echo '***** end renameColumns ************* <br>';
                     $NewRow->deleted=1;
                     //print_r($NewRow->toArray());
                     $id=$NewRow->save();
-                    
-                    
+                                        
                     //$this->log->info("Row $id written.");
                     
                 }
@@ -357,8 +336,7 @@ echo '***** end renameColumns ************* <br>';
                     $log_row->msg = $Ex->getMessage();
                 }
                 unset($NewRow);
-                gc_collect_cycles();
-                
+                gc_collect_cycles();               
             }
             //echo "********************\n";
             $objPHPExcel->disconnectWorksheets();
@@ -379,15 +357,12 @@ echo('end load()----------------<br>');
     }
     
     
-    public function log() {
-        
+    public function log() {   
         $LogTable = new ExcelMgr_Models_ExcelMgrLog();
         
         $sel = $LogTable->select();
         $sel->where("excel_mgr_batch_id = ?", $this->batch_id);
         
-        print_r($LogTable->fetchAll($sel)->toArray(),true);
-        
+        print_r($LogTable->fetchAll($sel)->toArray(),true);       
     }
-
 }
