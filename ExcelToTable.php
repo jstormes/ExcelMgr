@@ -107,16 +107,18 @@ class ExcelMgr_ExcelToTable
         $backgound_columns[] = 'excel_mgr_batch_id';
         $backgound_columns[] = 'deleted';
         
+        // look at row 0
+        $firstRow = $xlsx->row($this->data_start_row-1, $ws, $cols);
 
         $i = $this->data_start_row;
         // for($i=1;$i<$TotalRows;$i++) {
         for($i;$i<$TotalRows;$i++) {
-            $row = $xlsx->row($i,$ws,$cols);
+            $row = $xlsx->row($i, $ws, $cols);
             
             $new_row = array();
             foreach($map as $k=>$v) {
             
-                if (!in_array($v,$backgound_columns)) {
+                if (!in_array($v, $backgound_columns)) {
                 
                     if ($metadata[$map[$k]]['DATA_TYPE']=='date')
                         $new_row[]=date('c',($row[$k] - 25569) * 86400);
