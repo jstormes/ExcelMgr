@@ -78,8 +78,7 @@ class ExcelMgr_View_ImportExcel
         $this->options = array_merge($_defaults,$options);
 
         // Get our table name from the model
-       // //$this->table_name = $this->destTable->info('name');
-        $this->table_name = get_class($this->destTable);
+        $this->table_name = $this->destTable->info('name');
 
         // Get the meta data from the model
         $this->dest_meta = $destination->info('metadata');
