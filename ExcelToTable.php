@@ -122,7 +122,7 @@ echo "\n";
         $backgound_columns[] = 'excel_mgr_batch_id';
         $backgound_columns[] = 'deleted';       
 
-        $i = $this->data_start_row;
+        $i = $this->data_start_row+$this->first_row_names;
         // for($i=1;$i<$TotalRows;$i++) {
         for($i;$i<$TotalRows;$i++) {
             $row = $xlsx->row($i,$ws,$cols);           

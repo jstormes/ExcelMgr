@@ -69,6 +69,25 @@ try {
     $Batch_Row->pid = getmypid();
     $Batch_Row->save();
     
+    //**** Call back function ****/
+    // Added because we don't have events in ZF1
+    //
+    if(!is_null( $Batch_Row->callback )){
+    	echo "\nPre Call Back: ".$Batch_Row->callback."\n";
+    	if(class_exists($Batch_Row->callback)){
+    		echo "\nPre Call Back ClassExists\n";
+    		$callback = new $Batch_Row->callback;
+    		if (method_exists($callback,"pre_load")) {
+    			echo "\nPre Call Back method exists\n";
+    			$callback->pre_load($Batch_Row);
+    		} else {
+    			echo "\nPre Call Back method not found.\n";
+    		}
+    	}else{
+    		echo "\nCould not find Pre-Call Back Class\n";
+    	}
+    }
+    
     $Loader = new ExcelMgr_ExcelToTable($batch_id);
     if ($Loader->load()){
         $Batch_Row->status="Done";
@@ -81,7 +100,11 @@ try {
             if(class_exists($Batch_Row->callback)){
                 echo "\nCall Back ClassExists\n";
                 $callback = new $Batch_Row->callback;
-                $callback->init($Batch_Row);
+                if (method_exists($callback,"post_load")) {
+                	$callback->post_load($Batch_Row);
+                }else{
+                	echo "\nCall Back method not found.\n";
+                }
             }else{
                 echo "\nCould not find Call Back Class\n";
             }
