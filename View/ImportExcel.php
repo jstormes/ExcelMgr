@@ -253,6 +253,7 @@ class ExcelMgr_View_ImportExcel
         $modalView->Help       = $this->options['Help'];
         $modalView->project_id = $this->project_id;
         $modalView->table_name = $this->table_name;
+        $modalView->callback   = $this->options['callback'];
 
 // $this->log->debug($this->options['preload']);
 // $this->log->debug($modalView->name);
@@ -296,7 +297,7 @@ class ExcelMgr_View_ImportExcel
         if( isset($_POST['callback'] )){
             $modalView->callback = $_POST['callback'];
         }else{
-            $modalView->callback = '';
+            $modalView->callback = $this->options['callback'];
         }
 
         /**  Show history for this table's loads  **/
