@@ -87,7 +87,7 @@ echo "Total Rows ".$TotalRows."\n";
         $sql = "INSERT INTO `{$this->table_name}` {$str_columns}
                 VALUES ({$pos_str})";
         
-echo "\n $map --";
+echo "\n map --";
 print_r($map);
 // echo "\n $sql --";
 // print_r($sql);
