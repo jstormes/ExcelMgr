@@ -108,7 +108,7 @@ echo "\n";
             $tempArray = array();
             $count = 0;
             foreach($map as $key=>$value){
-                $tempArray[] = array($value, $columnNames[$count]);
+                $tempArray[] = array($value, str_replace (array("\r\n", "\n", "\r"), ' ',$columnNames[$count]));
                 $count++;
             }
             var_dump($tempArray);
