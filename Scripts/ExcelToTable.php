@@ -65,6 +65,9 @@ $Batch_Row=$Batch->find($batch_id)->current();
 
 try {
     echo "\nStarted\n";
+    echo "\nParamters:\n";
+    print_r($Batch_Row->toArray());
+    
     $Batch_Row->status="Started";
     $Batch_Row->pid = getmypid();
     $Batch_Row->save();
@@ -76,7 +79,7 @@ try {
     	echo "\nPre Call Back: ".$Batch_Row->callback."\n";
     	if(class_exists($Batch_Row->callback)){
     		echo "\nPre Call Back ClassExists\n";
-    		$callback = new $Batch_Row->callback;
+    		$callback = new $Batch_Row->callback($Batch_Row->project_id);
     		if (method_exists($callback,"pre_load")) {
     			echo "\nPre Call Back method exists\n";
     			$callback->pre_load($Batch_Row);

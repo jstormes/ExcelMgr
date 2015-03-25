@@ -44,7 +44,7 @@ echo('ExcelToTable.php -> load() ---------------<br>');
         
         //$this->destTable = new Zend_Db_Table($this->table_name);
         //$t=
-        $this->destTable = new $this->table_name();
+        $this->destTable = new $this->table_name($this->project_id);
         $this->destTable->project_id = $this->project_id;
         $this->table_name = $this->destTable->info('name');
 
